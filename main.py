@@ -8,6 +8,7 @@ from strategies.GoldenCross import GoldenCross
 from strategies.BuyHold import BuyHold
 from strategies.MultipleSmaCross import MultipleSmaCross
 from strategies.StopLoss import StopLoss
+from strategies.SimpleRsi import SimpleRsi
 
 
 def valid_date(s):
@@ -29,16 +30,10 @@ def str2bool(v):
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
 
-if __name__ == '__main__':
-    # available strategies
-    strategies = {
-        "golden_cross": GoldenCross,
-        "buy_hold": BuyHold,
-        "multiple_sma_cross": MultipleSmaCross,
-        "stop_loss": StopLoss,
-    }
-
-    parser = argparse.ArgumentParser()
+def parse_args(pargs=None):
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        description='Backhacker by Hobson Holdings')
     parser.add_argument(
         '--symbol1', type=str, default='SPY',
         help='Symbol you want to trade.')
@@ -66,7 +61,27 @@ if __name__ == '__main__':
     parser.add_argument(
         '--plot', type=str2bool, nargs='?', const=True, default=False,
         help='set to true to plot after backtest')
-    args = parser.parse_args()
+    parser.add_argument(
+        '--is-minute', type=str2bool, nargs='?', const=True, default=False,
+        help='set to true to use minutes as the time frame')
+
+    if pargs is not None:
+        return parser.parse_args(pargs)
+
+    return parser.parse_args()
+
+
+if __name__ == '__main__':
+    # available strategies
+    strategies = {
+        "golden_cross": GoldenCross,
+        "buy_hold": BuyHold,
+        "multiple_sma_cross": MultipleSmaCross,
+        "stop_loss": StopLoss,
+        "simple_rsi": SimpleRsi,
+    }
+
+    args = parse_args()
 
     if args.strategy not in strategies:
         print("Invalid strategy, must select one of {}".format(strategies.keys()))
@@ -89,15 +104,13 @@ if __name__ == '__main__':
         data0 = DataFactory(
             dataname=args.symbol1,
             historical=False,
-            timeframe=bt.TimeFrame.TFrame("Minutes"),
-            # timeframe=bt.TimeFrame.Days
+            timeframe=bt.TimeFrame.TFrame("Minutes") if args.is_minute else bt.TimeFrame.Days,
         )
         if args.symbol2:
             data1 = DataFactory(
                 dataname=args.symbol2,
                 historical=False,
-                timeframe=bt.TimeFrame.TFrame("Minutes"),
-                # timeframe=bt.TimeFrame.Days
+                timeframe=bt.TimeFrame.TFrame("Minutes") if args.is_minute else bt.TimeFrame.Days,
             )
 
         broker = store.getbroker()
@@ -108,8 +121,7 @@ if __name__ == '__main__':
             historical=True,
             fromdate=args.start_date,
             todate=args.end_date,
-            timeframe=bt.TimeFrame.TFrame("Minutes"),
-            # timeframe=bt.TimeFrame.Days
+            timeframe=bt.TimeFrame.TFrame("Minutes") if args.is_minute else bt.TimeFrame.Days,
         )
 
         if args.symbol2:
@@ -118,8 +130,7 @@ if __name__ == '__main__':
                 historical=True,
                 fromdate=args.start_date,
                 todate=args.end_date,
-                timeframe=bt.TimeFrame.TFrame("Minutes"),
-                # timeframe=bt.TimeFrame.Days
+                timeframe=bt.TimeFrame.TFrame("Minutes") if args.is_minute else bt.TimeFrame.Days,
             )
 
     cerebro.adddata(data0)
@@ -142,4 +153,4 @@ if __name__ == '__main__':
     print('P/L: {}%'.format((pnl / start_cash) * 100))
 
     if args.plot:
-        cerebro.plot()
+        cerebro.plot(style='candlestick')
