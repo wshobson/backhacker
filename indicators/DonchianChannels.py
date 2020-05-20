@@ -10,6 +10,11 @@ class DonchianChannels(bt.Indicator):
         If `0`, the current prices will be considered for the Donchian
         Channel. This means that the price will **NEVER** break through the
         upper/lower channel bands.
+
+        Definition:
+          - https://en.wikipedia.org/wiki/Donchian_channel
+          See also:
+          - https://analyzingalpha.com/backtrader-backtesting-trading-strategies
     """
 
     alias = ('DCH', 'DonchianChannel',)

@@ -1,11 +1,11 @@
 from strategies.BaseStrategy import BaseStrategy
-from indicators.KeltnerChannel import KeltnerChannel as KeltnerChannelInd
+from indicators.Extrema import Extrema as ExtremaInd
 
 
-class KeltnerChannel(BaseStrategy):
+class Extrema(BaseStrategy):
     def __init__(self):
         super().__init__()
-        self.indicator = KeltnerChannelInd()
+        self.indicator = ExtremaInd()
 
     def next(self):
         # Log the closing prices of the series from the reference
@@ -14,9 +14,9 @@ class KeltnerChannel(BaseStrategy):
         if self.order:  # check if order is pending, if so, then break out
             return
 
-        if self.indicator.l.lower[0] > self.data[0]:
+        if self.indicator.l.lmin[0] < self.data[0]:
             self.log('BUY CREATE {0:8.2f}'.format(self.dataclose[0]))
             self.order = self.buy(size=self.p.stake)
-        elif self.indicator.l.upper[0] < self.data[0]:
+        elif self.indicator.l.lmax[0] > self.data[0]:
             self.log('SELL CREATE, {0:8.2f}'.format(self.dataclose[0]))
             self.order = self.sell(size=self.p.stake)

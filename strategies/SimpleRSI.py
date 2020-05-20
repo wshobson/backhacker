@@ -16,7 +16,9 @@ class SimpleRSI(BaseStrategy):
 
         if not self.position:
             if self.rsi < 30:
-                self.buy(size=self.p.stake)
+                self.log('BUY CREATE {0:8.2f}'.format(self.dataclose[0]))
+                self.order = self.buy(size=self.p.stake)
         else:
             if self.rsi > 70:
-                self.sell(size=self.p.stake)
+                self.log('SELL CREATE, {0:8.2f}'.format(self.dataclose[0]))
+                self.order = self.sell(size=self.p.stake)

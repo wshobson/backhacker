@@ -10,9 +10,11 @@ from strategies.MultipleSMACross import MultipleSMACross
 from strategies.StopLoss import StopLoss
 from strategies.SimpleRSI import SimpleRSI
 from strategies.DonchianChannels import DonchianChannels
+from strategies.KeltnerChannel import KeltnerChannel
 from strategies.ConnorsRSI import ConnorsRSI
 from strategies.Momentum import Momentum
 from strategies.TwoBarsDownFiveBarsHold import TwoBarsDownFiveBarsHold
+from strategies.Extrema import Extrema
 
 
 def valid_date(s):
@@ -87,9 +89,11 @@ if __name__ == '__main__':
         "stop_loss": StopLoss,
         "simple_rsi": SimpleRSI,
         "donchian_channels": DonchianChannels,
+        "keltner_channel": KeltnerChannel,
         "conners_rsi": ConnorsRSI,
         "momentum": Momentum,
         "2bd_5bh": TwoBarsDownFiveBarsHold,
+        "extrema": Extrema,
     }
 
     args = parse_args()

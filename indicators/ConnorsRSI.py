@@ -24,7 +24,12 @@ class Streak(bt.ind.PeriodN):
 class ConnorsRSI(bt.Indicator):
     """
     Calculates the ConnorsRSI as:
-        - (RSI(per_rsi) + RSI(Streak, per_streak) + PctRank(per_rank)) / 3
+      - (RSI(per_rsi) + RSI(Streak, per_streak) + PctRank(per_rank)) / 3
+
+    Definition:
+      - https://www.nirvanasystems.com/ultimate-indicator-connors-rsi/
+      See also:
+      - https://analyzingalpha.com/backtrader-backtesting-trading-strategies
     """
     lines = ('crsi',)
     params = dict(prsi=3, pstreak=2, prank=100)
