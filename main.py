@@ -6,13 +6,13 @@ from datetime import datetime
 
 from strategies.SMACross import SMACross
 from strategies.GoldenCross import GoldenCross
-from strategies.BuyHold import BuyHold
 from strategies.MultipleSMACross import MultipleSMACross
 from strategies.StopLoss import StopLoss
 from strategies.SimpleRSI import SimpleRSI
 from strategies.DonchianHiLow import DonchianHiLow
 from strategies.ConnorsRSI import ConnorsRSI
 from strategies.Momentum import Momentum
+from strategies.TwoBarsDownFiveBarsHold import TwoBarsDownFiveBarsHold
 
 
 def valid_date(s):
@@ -66,6 +66,9 @@ def parse_args(pargs=None):
         '--plot', type=str2bool, nargs='?', const=True, default=False,
         help='set to true to plot after backtest')
     parser.add_argument(
+        '--stake', type=int, default=1,
+        help='Stake to apply in each operation')
+    parser.add_argument(
         '--is-minute', type=str2bool, nargs='?', const=True, default=False,
         help='set to true to use minutes as the time frame')
 
@@ -80,13 +83,13 @@ if __name__ == '__main__':
     strategies = {
         "sma_cross": SMACross,
         "golden_cross": GoldenCross,
-        "buy_hold": BuyHold,
         "multiple_sma_cross": MultipleSMACross,
         "stop_loss": StopLoss,
         "simple_rsi": SimpleRSI,
         "donchian_hi_low": DonchianHiLow,
         "conners_rsi": ConnorsRSI,
         "momentum": Momentum,
+        "2bd_5bh": TwoBarsDownFiveBarsHold,
     }
 
     args = parse_args()
@@ -96,15 +99,13 @@ if __name__ == '__main__':
         sys.exit()
 
     cerebro = bt.Cerebro()
-    cerebro.addstrategy(strategy=strategies[args.strategy])
+    cerebro.addstrategy(strategy=strategies[args.strategy], stake=args.stake)
 
     if args.is_backtest:
         cerebro.addobserver(bt.observers.Value)
         cerebro.addanalyzer(bt.analyzers.SharpeRatio, riskfreerate=0.0)
         cerebro.addanalyzer(bt.analyzers.Returns)
         cerebro.addanalyzer(bt.analyzers.DrawDown)
-    else:
-        cerebro.addsizer(bt.sizers.PercentSizer, percents=6)
 
     store = alpaca_backtrader_api.AlpacaStore(
         key_id=args.key_id,
@@ -150,7 +151,7 @@ if __name__ == '__main__':
             )
 
     cerebro.adddata(data0)
-    if data1:
+    if data1 is not None:
         cerebro.adddata(data1)
 
     if args.is_backtest:
@@ -168,10 +169,11 @@ if __name__ == '__main__':
 
         print('Final Portfolio Value: ${:.2f}'.format(portfolio_value))
         print('P/L: ${:.2f}'.format(pnl))
-        print('P/L: {}%'.format((pnl / start_cash) * 100))
+        print('P/L: {:.2f}%'.format((pnl / start_cash) * 100))
         print('Sharpe Ratio: {:.3f}'.format(results[0].analyzers.sharperatio.get_analysis()['sharperatio'] or 0.0))
         print('Normalized Annual Return: {:.2f}%'.format(results[0].analyzers.returns.get_analysis()['rnorm100'] or 0.0))
         print('Max Drawdown: {:.2f}%'.format(results[0].analyzers.drawdown.get_analysis()['max']['drawdown'] or 0.0))
 
         if args.plot:
-            cerebro.plot()
+            cerebro.plot(style='candlestick')
+            # cerebro.plot()

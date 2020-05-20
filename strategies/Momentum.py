@@ -3,12 +3,17 @@ from indicators.Momentum import Momentum as MomentumInd
 
 
 class Momentum(bt.Strategy):
+    params = dict(
+        stake=10,  # just need for other strategies, not used here
+    )
+
     def __init__(self):
         self.i = 0
         self.inds = {}
         self.spy = self.datas[0]
         self.stocks = self.datas[1:]
 
+        # TODO: figure out a way to support this with SPY 200 MA
         self.spy_sma200 = bt.indicators.SimpleMovingAverage(self.spy.close, period=200)
 
         for d in self.stocks:
