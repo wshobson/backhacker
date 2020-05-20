@@ -4,11 +4,15 @@ import alpaca_backtrader_api
 import backtrader as bt
 from datetime import datetime
 
+from strategies.SMACross import SMACross
 from strategies.GoldenCross import GoldenCross
 from strategies.BuyHold import BuyHold
-from strategies.MultipleSmaCross import MultipleSmaCross
+from strategies.MultipleSMACross import MultipleSMACross
 from strategies.StopLoss import StopLoss
-from strategies.SimpleRsi import SimpleRsi
+from strategies.SimpleRSI import SimpleRSI
+from strategies.DonchianHiLow import DonchianHiLow
+from strategies.ConnorsRSI import ConnorsRSI
+from strategies.Momentum import Momentum
 
 
 def valid_date(s):
@@ -74,22 +78,33 @@ def parse_args(pargs=None):
 if __name__ == '__main__':
     # available strategies
     strategies = {
+        "sma_cross": SMACross,
         "golden_cross": GoldenCross,
         "buy_hold": BuyHold,
-        "multiple_sma_cross": MultipleSmaCross,
+        "multiple_sma_cross": MultipleSMACross,
         "stop_loss": StopLoss,
-        "simple_rsi": SimpleRsi,
+        "simple_rsi": SimpleRSI,
+        "donchian_hi_low": DonchianHiLow,
+        "conners_rsi": ConnorsRSI,
+        "momentum": Momentum,
     }
 
     args = parse_args()
 
     if args.strategy not in strategies:
-        print("Invalid strategy, must select one of {}".format(strategies.keys()))
+        print('Invalid strategy, must select one of {}'.format(strategies.keys()))
         sys.exit()
 
     cerebro = bt.Cerebro()
     cerebro.addstrategy(strategy=strategies[args.strategy])
-    cerebro.addsizer(bt.sizers.PercentSizer, percents=50)
+
+    if args.is_backtest:
+        cerebro.addobserver(bt.observers.Value)
+        cerebro.addanalyzer(bt.analyzers.SharpeRatio, riskfreerate=0.0)
+        cerebro.addanalyzer(bt.analyzers.Returns)
+        cerebro.addanalyzer(bt.analyzers.DrawDown)
+    else:
+        cerebro.addsizer(bt.sizers.PercentSizer, percents=6)
 
     store = alpaca_backtrader_api.AlpacaStore(
         key_id=args.key_id,
@@ -98,19 +113,20 @@ if __name__ == '__main__':
         usePolygon=False)
 
     DataFactory = store.getdata
+    time_frame = bt.TimeFrame.TFrame("Minutes") if args.is_minute else bt.TimeFrame.Days
     data1 = None
 
     if not args.is_backtest:
         data0 = DataFactory(
             dataname=args.symbol1,
             historical=False,
-            timeframe=bt.TimeFrame.TFrame("Minutes") if args.is_minute else bt.TimeFrame.Days,
+            timeframe=time_frame,
         )
         if args.symbol2:
             data1 = DataFactory(
                 dataname=args.symbol2,
                 historical=False,
-                timeframe=bt.TimeFrame.TFrame("Minutes") if args.is_minute else bt.TimeFrame.Days,
+                timeframe=time_frame,
             )
 
         broker = store.getbroker()
@@ -121,7 +137,7 @@ if __name__ == '__main__':
             historical=True,
             fromdate=args.start_date,
             todate=args.end_date,
-            timeframe=bt.TimeFrame.TFrame("Minutes") if args.is_minute else bt.TimeFrame.Days,
+            timeframe=time_frame,
         )
 
         if args.symbol2:
@@ -130,7 +146,7 @@ if __name__ == '__main__':
                 historical=True,
                 fromdate=args.start_date,
                 todate=args.end_date,
-                timeframe=bt.TimeFrame.TFrame("Minutes") if args.is_minute else bt.TimeFrame.Days,
+                timeframe=time_frame,
             )
 
     cerebro.adddata(data0)
@@ -142,15 +158,20 @@ if __name__ == '__main__':
         cerebro.broker.setcommission(commission=0.0)
 
     start_cash = cerebro.broker.getvalue()
-    print('Starting Portfolio Value: $%.2f' % start_cash)
+    print('Starting Portfolio Value: ${:.2f}'.format(start_cash))
 
-    cerebro.run()
+    results = cerebro.run()
 
-    portfolio_value = cerebro.broker.getvalue()
-    pnl = portfolio_value - start_cash
-    print('Final Portfolio Value: $%.2f' % portfolio_value)
-    print('P/L: $%.2f' % pnl)
-    print('P/L: {}%'.format((pnl / start_cash) * 100))
+    if args.is_backtest:
+        portfolio_value = cerebro.broker.getvalue()
+        pnl = portfolio_value - start_cash
 
-    if args.plot:
-        cerebro.plot(style='candlestick')
+        print('Final Portfolio Value: ${:.2f}'.format(portfolio_value))
+        print('P/L: ${:.2f}'.format(pnl))
+        print('P/L: {}%'.format((pnl / start_cash) * 100))
+        print('Sharpe Ratio: {:.3f}'.format(results[0].analyzers.sharperatio.get_analysis()['sharperatio'] or 0.0))
+        print('Normalized Annual Return: {:.2f}%'.format(results[0].analyzers.returns.get_analysis()['rnorm100'] or 0.0))
+        print('Max Drawdown: {:.2f}%'.format(results[0].analyzers.drawdown.get_analysis()['max']['drawdown'] or 0.0))
+
+        if args.plot:
+            cerebro.plot()

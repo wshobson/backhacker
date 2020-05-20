@@ -1,7 +1,7 @@
 import backtrader as bt
 
 
-class MultipleSmaCross(bt.SignalStrategy):
+class MultipleSMACross(bt.SignalStrategy):
     params = dict(
         pfast=10,  # period for the fast moving average
         pslow=30  # period for the slow moving average
