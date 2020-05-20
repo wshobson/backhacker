@@ -71,6 +71,9 @@ def parse_args(pargs=None):
         '--stake', type=int, default=1,
         help='Stake to apply in each operation')
     parser.add_argument(
+        '--cash', type=float, default=10000.0,
+        help='Starting cash for backtesting')
+    parser.add_argument(
         '--is-minute', type=str2bool, nargs='?', const=True, default=False,
         help='set to true to use minutes as the time frame')
 
@@ -159,7 +162,7 @@ if __name__ == '__main__':
         cerebro.adddata(data1)
 
     if args.is_backtest:
-        cerebro.broker.setcash(10000.0)
+        cerebro.broker.setcash(args.cash)
         cerebro.broker.setcommission(commission=0.0)
 
     start_cash = cerebro.broker.getvalue()
@@ -173,7 +176,7 @@ if __name__ == '__main__':
 
         print('Final Portfolio Value: ${:.2f}'.format(portfolio_value))
         print('P/L: ${:.2f}'.format(pnl))
-        print('P/L: {:.2f}%'.format((pnl / start_cash) * 100))
+        print('P/L %: {:.2f}%'.format((pnl / start_cash) * 100))
         print('Sharpe Ratio: {:.3f}'.format(results[0].analyzers.sharperatio.get_analysis()['sharperatio'] or 0.0))
         print('Normalized Annual Return: {:.2f}%'.format(results[0].analyzers.returns.get_analysis()['rnorm100'] or 0.0))
         print('Max Drawdown: {:.2f}%'.format(results[0].analyzers.drawdown.get_analysis()['max']['drawdown'] or 0.0))
