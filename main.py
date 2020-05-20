@@ -9,7 +9,7 @@ from strategies.GoldenCross import GoldenCross
 from strategies.MultipleSMACross import MultipleSMACross
 from strategies.StopLoss import StopLoss
 from strategies.SimpleRSI import SimpleRSI
-from strategies.DonchianHiLow import DonchianHiLow
+from strategies.DonchianChannels import DonchianChannels
 from strategies.ConnorsRSI import ConnorsRSI
 from strategies.Momentum import Momentum
 from strategies.TwoBarsDownFiveBarsHold import TwoBarsDownFiveBarsHold
@@ -86,7 +86,7 @@ if __name__ == '__main__':
         "multiple_sma_cross": MultipleSMACross,
         "stop_loss": StopLoss,
         "simple_rsi": SimpleRSI,
-        "donchian_hi_low": DonchianHiLow,
+        "donchian_channels": DonchianChannels,
         "conners_rsi": ConnorsRSI,
         "momentum": Momentum,
         "2bd_5bh": TwoBarsDownFiveBarsHold,

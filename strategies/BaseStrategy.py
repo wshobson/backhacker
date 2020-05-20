@@ -1,30 +1,17 @@
 import backtrader as bt
-from indicators.DonchianChannels import DonchianChannels
 
 
-class DonchianHiLow(bt.Strategy):
+class BaseStrategy(bt.Strategy):
     params = dict(
         stake=10,
     )
 
     def __init__(self):
-        self.indicator = DonchianChannels()
         self.dataclose = self.datas[0].close
         self.order = None
 
     def next(self):
-        # Log the closing prices of the series from the reference
-        self.log('Close, {0:8.2f}'.format(self.dataclose[0]))
-
-        if self.order:  # check if order is pending, if so, then break out
-            return
-
-        if self.data[0] > self.indicator.dch[0]:
-            self.log('BUY CREATE {0:8.2f}'.format(self.dataclose[0]))
-            self.order = self.buy(size=self.p.stake)
-        elif self.data[0] < self.indicator.dcl[0]:
-            self.log('SELL CREATE, {0:8.2f}'.format(self.dataclose[0]))
-            self.order = self.sell(size=self.p.stake)
+        pass
 
     def log(self, txt, dt=None):
         # Logging function for the strategy.  'txt' is the statement and 'dt' can be used to specify a specific datetime

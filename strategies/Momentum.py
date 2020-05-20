@@ -1,13 +1,11 @@
 import backtrader as bt
+from strategies.BaseStrategy import BaseStrategy
 from indicators.Momentum import Momentum as MomentumInd
 
 
-class Momentum(bt.Strategy):
-    params = dict(
-        stake=10,  # just need for other strategies, not used here
-    )
-
+class Momentum(BaseStrategy):
     def __init__(self):
+        super().__init__()
         self.i = 0
         self.inds = {}
         self.spy = self.datas[0]
