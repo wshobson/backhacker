@@ -14,7 +14,6 @@ class BaseStrategy(bt.Strategy):
         pass
 
     def log(self, txt, dt=None):
-        # Logging function for the strategy.  'txt' is the statement and 'dt' can be used to specify a specific datetime
         dt = dt or self.datas[0].datetime.date(0)
         print('{0}, {1}'.format(dt.isoformat(), txt))
 

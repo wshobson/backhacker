@@ -1,11 +1,11 @@
-import backtrader as bt
 from strategies.BaseStrategy import BaseStrategy
+from indicators.Swing import Swing as SwingInd
 
 
-class SimpleRSI(BaseStrategy):
+class Swing(BaseStrategy):
     def __init__(self):
         super().__init__()
-        self.rsi = bt.indicators.RSI_SMA(self.data.close, period=21)
+        self.indicator = SwingInd(period=14)
 
     def next(self):
         # Log the closing prices of the series from the reference
@@ -14,12 +14,12 @@ class SimpleRSI(BaseStrategy):
         if self.order:  # check if order is pending, if so, then break out
             return
 
-        # we only care about going long
+        # we are only interested in going long
         if not self.position:
-            if self.rsi <= 30:
+            if self.indicator.l.signal[0] == -1:
                 self.log('BUY CREATE {0:8.2f}'.format(self.dataclose[0]))
                 self.order = self.buy(size=self.p.stake)
         else:
-            if self.rsi >= 70:
-                self.log('SELL CREATE, {0:8.2f}'.format(self.dataclose[0]))
-                self.order = self.sell(size=self.p.stake)
+            if self.indicator.l.signal[0] == 1:
+                self.log('CLOSE CREATE, {0:8.2f}'.format(self.dataclose[0]))
+                self.order = self.close(size=self.p.stake)

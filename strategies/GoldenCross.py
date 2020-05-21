@@ -28,13 +28,13 @@ class GoldenCross(BaseStrategy):
         if self.order:
             return
 
-        if self.position.size == 0 and self.crossover > 0:
-            # amount_to_invest = (0.05 * self.broker.cash)
-            # self.size = math.floor(amount_to_invest / self.data.close)
+        if not self.position:
+            if self.crossover > 0:
+                # amount_to_invest = (0.05 * self.broker.cash)
+                # self.size = math.floor(amount_to_invest / self.data.close)
 
-            self.log('BUY CREATE {0:8.2f}'.format(self.dataclose[0]))
-            self.order = self.buy(size=self.p.stake)
-
-        if self.position.size > 0 > self.crossover:
+                self.log('BUY CREATE {0:8.2f}'.format(self.dataclose[0]))
+                self.order = self.buy(size=self.p.stake)
+        elif self.crossover < 0:
             self.log('CLOSE CREATE, {0:8.2f}'.format(self.dataclose[0]))
             self.order = self.close(size=self.p.stake)

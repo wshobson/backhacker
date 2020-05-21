@@ -9,8 +9,7 @@ COPY . .
 # Install production dependencies.
 RUN pip install -r requirements.txt
 
-# Run the web service on container startup. Here we use the gunicorn
-# webserver, with one worker process and 8 threads.
-# For environments with multiple CPU cores, increase the number of workers
-# to be equal to the cores available.
-CMD ["python", "./main.py", "--symbol1=SPY", "--symbol2=QQQ", "--strategy=multiple_sma_cross", "--key-id=PKO2LOVJQ40HTVUVWTQY", "--secret-key=a20LbMWJqwLi44FsH1XU2fPzmMVAxLGLS43NcHbg"]
+ENV APCA_KEY_ID PKO2LOVJQ40HTVUVWTQY
+ENV APCA_SECRET_KEY a20LbMWJqwLi44FsH1XU2fPzmMVAxLGLS43NcHbg
+
+CMD exec python main.py --symbol1=SPY --strategy=connors_rsi --key-id=$APCA_KEY_ID --secret-key=$APCA_SECRET_KEY

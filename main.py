@@ -4,6 +4,7 @@ import alpaca_backtrader_api
 import backtrader as bt
 from datetime import datetime
 
+from strategies.Swing import Swing
 from strategies.SMACross import SMACross
 from strategies.GoldenCross import GoldenCross
 from strategies.MultipleSMACross import MultipleSMACross
@@ -86,6 +87,7 @@ def parse_args(pargs=None):
 if __name__ == '__main__':
     # available strategies
     strategies = {
+        "swing": Swing,
         "sma_cross": SMACross,
         "golden_cross": GoldenCross,
         "multiple_sma_cross": MultipleSMACross,
