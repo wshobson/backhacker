@@ -2,7 +2,11 @@ import sys
 import argparse
 import alpaca_backtrader_api
 import backtrader as bt
+import quantstats as qs
+from pandas import Series
 from datetime import datetime
+
+from analyzers.CashMarket import CashMarket
 
 from strategies.Swing import Swing
 from strategies.SMACross import SMACross
@@ -17,6 +21,8 @@ from strategies.Momentum import Momentum
 from strategies.TwoBarsDownFiveBarsHold import TwoBarsDownFiveBarsHold
 from strategies.Extrema import Extrema
 from strategies.BollingerBands import BollingerBands
+
+qs.extend_pandas()
 
 
 def valid_date(s):
@@ -36,6 +42,32 @@ def str2bool(v):
         return False
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
+
+
+def print_trade_analysis(analyzer):
+    """
+    Function to print the Technical Analysis results in a nice format.
+    """
+    total_open = round(analyzer.total.open, 2)
+    total_closed = round(analyzer.total.closed, 2)
+    total_won = round(analyzer.won.total, 2)
+    total_lost = round(analyzer.lost.total, 2)
+    win_streak = round(analyzer.streak.won.longest, 2)
+    lose_streak = round(analyzer.streak.lost.longest, 2)
+    pnl_net = round(analyzer.pnl.net.total, 2)
+    strike_rate = round((total_won / total_closed) * 100, 2)
+
+    h1 = ['Total Open', 'Total Closed', 'Total Won', 'Total Lost']
+    h2 = ['Strike Rate', 'Win Streak', 'Losing Streak', 'P/L Net']
+    r1 = [total_open, total_closed, total_won, total_lost]
+    r2 = [strike_rate, win_streak, lose_streak, pnl_net]
+
+    print('-' * 65)
+    for (h, r) in [(h1, r1), (h2, r2)]:
+        print('|{:^15s}|{:^15s}|{:^15s}|{:^15s}|'.format(*h))
+        print('|' + '-' * 15 + '|' + '-' * 15 + '|' + '-' * 15 + '|' + '-' * 15 + '|')
+        print('|{:^15.2f}|{:^15.2f}|{:^15.2f}|{:^15.2f}|'.format(*r))
+        print('-' * 65)
 
 
 def parse_args(pargs=None):
@@ -75,6 +107,9 @@ def parse_args(pargs=None):
     parser.add_argument(
         '--cash', type=float, default=10000.0,
         help='Starting cash for backtesting')
+    parser.add_argument(
+        '--tearsheet',  type=str2bool, nargs='?', const=True, default=False,
+        help='set to true to generate a Quantstats tearsheet')
     parser.add_argument(
         '--is-minute', type=str2bool, nargs='?', const=True, default=False,
         help='set to true to use minutes as the time frame')
@@ -117,6 +152,9 @@ if __name__ == '__main__':
         cerebro.addanalyzer(bt.analyzers.SharpeRatio, riskfreerate=0.0)
         cerebro.addanalyzer(bt.analyzers.Returns)
         cerebro.addanalyzer(bt.analyzers.DrawDown)
+        cerebro.addanalyzer(bt.analyzers.TradeAnalyzer, _name="ta")
+        cerebro.addanalyzer(bt.analyzers.SQN, _name="sqn")
+        cerebro.addanalyzer(CashMarket, _name="cash_market")
 
     store = alpaca_backtrader_api.AlpacaStore(
         key_id=args.key_id,
@@ -177,13 +215,28 @@ if __name__ == '__main__':
     if args.is_backtest:
         portfolio_value = cerebro.broker.getvalue()
         pnl = portfolio_value - start_cash
+        strat = results[0]
 
+        # print the analyzers
+        print('\nTrade Analysis Results for {} in {}:'.format(args.strategy, args.symbol1))
+        print_trade_analysis(strat.analyzers.ta.get_analysis())
         print('Final Portfolio Value: ${:.2f}'.format(portfolio_value))
         print('P/L: ${:.2f}'.format(pnl))
         print('P/L %: {:.2f}%'.format((pnl / start_cash) * 100))
-        print('Sharpe Ratio: {:.3f}'.format(results[0].analyzers.sharperatio.get_analysis()['sharperatio'] or 0.0))
-        print('Normalized Annual Return: {:.2f}%'.format(results[0].analyzers.returns.get_analysis()['rnorm100'] or 0.0))
-        print('Max Drawdown: {:.2f}%'.format(results[0].analyzers.drawdown.get_analysis()['max']['drawdown'] or 0.0))
+        print('Sharpe Ratio: {:.3f}'.format(strat.analyzers.sharperatio.get_analysis()['sharperatio'] or 0.0))
+        print('SQN: {}'.format(round(strat.analyzers.sqn.get_analysis().sqn, 2)))
+        print('Normalized Annual Return: {:.2f}%'.format(strat.analyzers.returns.get_analysis()['rnorm100'] or 0.0))
+        print('Max Drawdown: {:.2f}%'.format(strat.analyzers.drawdown.get_analysis()['max']['drawdown'] or 0.0))
+
+        if args.tearsheet:
+            cash_market_analysis = strat.analyzers.cash_market.get_analysis()
+            df = Series(cash_market_analysis, index=cash_market_analysis.keys())
+            returns = qs.utils.to_returns(df)
+            qs.reports.html(
+                returns,
+                benchmark=None,
+                title='{} {} Strategy Tearsheet'.format(args.symbol1, args.strategy),
+                output='output/{}-tearsheet.html'.format(args.symbol1))
 
         if args.plot:
             cerebro.plot(style='candlestick')

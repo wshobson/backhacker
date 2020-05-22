@@ -131,4 +131,5 @@ dmypy.json
 # System
 .DS_Store
 .idea/
-screeners/*.txt
+screener-output.txt
+output/

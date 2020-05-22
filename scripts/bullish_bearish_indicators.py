@@ -132,7 +132,7 @@ class TestStrategy(bt.Strategy):
             for result in value:
                 output_str += '\n|{:^10s}|{:^10s}|{:^10}|{:^10}|{:^10.2f}|'.format(key, *result)
 
-        with open('screener-output.txt', 'w') as text_file:
+        with open('output/screener-output.txt', 'w') as text_file:
             print(output_str, file=text_file)
 
         print(output_str)
