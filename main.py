@@ -16,6 +16,7 @@ from strategies.ConnorsRSI import ConnorsRSI
 from strategies.Momentum import Momentum
 from strategies.TwoBarsDownFiveBarsHold import TwoBarsDownFiveBarsHold
 from strategies.Extrema import Extrema
+from strategies.BollingerBands import BollingerBands
 
 
 def valid_date(s):
@@ -99,6 +100,7 @@ if __name__ == '__main__':
         "momentum": Momentum,
         "2bd_5bh": TwoBarsDownFiveBarsHold,
         "extrema": Extrema,
+        "bollinger_bands": BollingerBands,
     }
 
     args = parse_args()

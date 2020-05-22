@@ -9,13 +9,16 @@ class BaseStrategy(bt.Strategy):
     def __init__(self):
         self.dataclose = self.datas[0].close
         self.order = None
+        self.buyprice = None
+        self.buycomm = None
+        self.bar_executed = None
 
     def next(self):
         pass
 
     def log(self, txt, dt=None):
         dt = dt or self.datas[0].datetime.date(0)
-        print('{0}, {1}'.format(dt.isoformat(), txt))
+        print('{}, {}'.format(dt.isoformat(), txt))
 
     def notify_trade(self, trade):
         if not trade.isclosed:
@@ -28,6 +31,7 @@ class BaseStrategy(bt.Strategy):
         # 1. If order is submitted/accepted, do nothing
         if order.status in [order.Submitted, order.Accepted]:
             return
+
         # 2. If order is buy/sell executed, report price executed
         if order.status in [order.Completed]:
             if order.isbuy():
