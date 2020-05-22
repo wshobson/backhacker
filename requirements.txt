@@ -6,6 +6,8 @@ async-timeout==3.0.1
 asyncio-nats-client==0.10.0
 attrs==19.3.0
 backtrader==1.9.74.123
+beautifulsoup4==4.9.1
+bs4==0.0.1
 certifi==2020.4.5.1
 chardet==3.0.4
 cycler==0.10.0
@@ -22,6 +24,7 @@ pytz==2020.1
 requests==2.23.0
 scipy==1.4.1
 six==1.14.0
+soupsieve==2.0.1
 urllib3==1.24.3
 websocket-client==0.57.0
 websockets==8.1
