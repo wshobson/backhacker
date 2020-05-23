@@ -3,8 +3,10 @@ import argparse
 import alpaca_backtrader_api
 import backtrader as bt
 import quantstats as qs
+import matplotlib
 from pandas import Series
 from datetime import datetime
+from functools import reduce
 
 from analyzers.CashMarket import CashMarket
 
@@ -21,8 +23,16 @@ from strategies.Momentum import Momentum
 from strategies.TwoBarsDownFiveBarsHold import TwoBarsDownFiveBarsHold
 from strategies.Extrema import Extrema
 from strategies.BollingerBands import BollingerBands
+from strategies.HeikinCandles import HeikinCandles
+from strategies.TwoPeriodRSI import TwoPeriodRSI
+from strategies.DoubleSevens import DoubleSevens
 
+matplotlib.style.use('default')
 qs.extend_pandas()
+
+
+def deep_get(dictionary, keys, default=None):
+    return reduce(lambda d, key: d.get(key, default) if isinstance(d, dict) else default, keys.split("."), dictionary)
 
 
 def valid_date(s):
@@ -48,19 +58,19 @@ def print_trade_analysis(analyzer):
     """
     Function to print the Technical Analysis results in a nice format.
     """
-    total_open = round(analyzer.total.open, 2)
-    total_closed = round(analyzer.total.closed, 2)
-    total_won = round(analyzer.won.total, 2)
-    total_lost = round(analyzer.lost.total, 2)
-    win_streak = round(analyzer.streak.won.longest, 2)
-    lose_streak = round(analyzer.streak.lost.longest, 2)
-    pnl_net = round(analyzer.pnl.net.total, 2)
-    strike_rate = round((total_won / total_closed) * 100, 2)
+    total_open = round(deep_get(analyzer, 'total.open', default=0.0), 2)
+    total_closed = round(deep_get(analyzer, 'total.closed', default=0.0), 2)
+    total_won = round(deep_get(analyzer, 'won.total', default=0.0), 2)
+    total_lost = round(deep_get(analyzer, 'lost.total', default=0.0), 2)
+    win_streak = round(deep_get(analyzer, 'streak.won.longest', default=0.0), 2)
+    lose_streak = round(deep_get(analyzer, 'streak.lost.longest', default=0.0), 2)
+    pnl_net = round(deep_get(analyzer, 'pnl.net.total', default=0.0), 2)
+    win_rate = round((total_won / total_closed) * 100, 2) if total_won > 0 and total_closed > 0 else 0.0
 
     h1 = ['Total Open', 'Total Closed', 'Total Won', 'Total Lost']
-    h2 = ['Strike Rate', 'Win Streak', 'Losing Streak', 'P/L Net']
+    h2 = ['Win Rate', 'Win Streak', 'Losing Streak', 'P/L Net']
     r1 = [total_open, total_closed, total_won, total_lost]
-    r2 = [strike_rate, win_streak, lose_streak, pnl_net]
+    r2 = [win_rate, win_streak, lose_streak, pnl_net]
 
     print('-' * 65)
     for (h, r) in [(h1, r1), (h2, r2)]:
@@ -136,6 +146,9 @@ if __name__ == '__main__':
         "2bd_5bh": TwoBarsDownFiveBarsHold,
         "extrema": Extrema,
         "bollinger_bands": BollingerBands,
+        "heikin": HeikinCandles,
+        "2_period_rsi": TwoPeriodRSI,
+        "double_7s": DoubleSevens,
     }
 
     args = parse_args()
