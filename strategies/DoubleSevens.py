@@ -7,7 +7,7 @@ class DoubleSevens(BaseStrategy):
     Implementation of the Double 7's strategy from Larry Connor's
     Short-Term Strategies book, Chapter 10
     Algorithm:
-        1. The SPY is above its 200-day moving average or SPY is above its 50-day MA
+        1. The SPY is above its 200-day MA or SPY is above its 50-day MA.
         2. The SPY closes at a X-day low, buy.
         3. If the SPY closes at a X-day high, sell your long position.
     """

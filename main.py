@@ -14,6 +14,7 @@ from functools import reduce
 
 from analyzers.CashMarket import CashMarket
 
+from strategies.BuyHold import BuyHold
 from strategies.Swing import Swing
 from strategies.SMACross import SMACross
 from strategies.GoldenCross import GoldenCross
@@ -137,6 +138,7 @@ def parse_args(pargs=None):
 def get_strategy(strat_type):
     # available strategies
     strategies = {
+        "buy_hold": BuyHold,
         "swing": Swing,
         "sma_cross": SMACross,
         "golden_cross": GoldenCross,

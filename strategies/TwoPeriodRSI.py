@@ -6,6 +6,10 @@ class TwoPeriodRSI(BaseStrategy):
     """
     Implementation of the 2-period RSI strategy from Larry Connor's
     Short-Term Strategies book, Chapter 9
+    Algorithm:
+        1. The SPY is above its 200-day MA.
+        2. If the 2-period RSI of the SPY closes below 5, buy.
+        3. If the SPY closes above its 5-period MA, sell your long position.
     """
     def __init__(self):
         super().__init__()
