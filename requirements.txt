@@ -14,11 +14,13 @@ cycler==0.10.0
 Deprecated==1.2.10
 idna==2.9
 kiwisolver==1.2.0
+lxml==4.5.1
 matplotlib==3.2.1
 multidict==4.7.6
 multitasking==0.0.9
 numpy==1.18.4
 pandas==1.0.3
+pandas-datareader==0.8.1
 pyparsing==2.4.7
 python-dateutil==2.8.1
 pytz==2020.1

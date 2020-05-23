@@ -1,10 +1,14 @@
+from __future__ import (absolute_import, division, print_function, unicode_literals)
+
 import sys
+import os
 import argparse
 import alpaca_backtrader_api
+import matplotlib
 import backtrader as bt
 import quantstats as qs
-import matplotlib
-from pandas import Series
+import pandas as pd
+import pandas_datareader.data as web
 from datetime import datetime
 from functools import reduce
 
@@ -91,14 +95,14 @@ def parse_args(pargs=None):
         '--symbol2', type=str, default=None,
         help='Symbol you want to trade.')
     parser.add_argument(
-        '--strategy', type=str, default='golden_cross',
+        '--strategy', type=str, default='sma_cross',
         help='The strategy to run')
     parser.add_argument(
         '--key-id', type=str, default=None,
-        help='API key ID')
+        help='Alpaca API Key ID')
     parser.add_argument(
         '--secret-key', type=str, default=None,
-        help='API secret key')
+        help='Alpaca API Secret Key')
     parser.add_argument(
         '--is-backtest', type=str2bool, nargs='?', const=True, default=True,
         help='false if you want to do live paper trading, true will do a backtest')
@@ -110,7 +114,7 @@ def parse_args(pargs=None):
         help='The end date - format YYYY-MM-DD')
     parser.add_argument(
         '--plot', type=str2bool, nargs='?', const=True, default=False,
-        help='set to true to plot after backtest')
+        help='set to true to plot after a backtest')
     parser.add_argument(
         '--stake', type=int, default=1,
         help='Stake to apply in each operation')
@@ -122,7 +126,7 @@ def parse_args(pargs=None):
         help='set to true to generate a Quantstats tearsheet')
     parser.add_argument(
         '--is-minute', type=str2bool, nargs='?', const=True, default=False,
-        help='set to true to use minutes as the time frame')
+        help='set to true to use minutes as the time frame instead of days')
 
     if pargs is not None:
         return parser.parse_args(pargs)
@@ -169,48 +173,46 @@ if __name__ == '__main__':
         cerebro.addanalyzer(bt.analyzers.SQN, _name="sqn")
         cerebro.addanalyzer(CashMarket, _name="cash_market")
 
-    store = alpaca_backtrader_api.AlpacaStore(
-        key_id=args.key_id,
-        secret_key=args.secret_key,
-        paper=True,
-        usePolygon=False)
-
-    DataFactory = store.getdata
     time_frame = bt.TimeFrame.TFrame("Minutes") if args.is_minute else bt.TimeFrame.Days
     data1 = None
 
     if not args.is_backtest:
+        store = alpaca_backtrader_api.AlpacaStore(
+            key_id=args.key_id,
+            secret_key=args.secret_key,
+            paper=True,
+            usePolygon=False)
+
+        DataFactory = store.getdata
         data0 = DataFactory(
             dataname=args.symbol1,
             historical=False,
-            timeframe=time_frame,
-        )
+            timeframe=time_frame)
         if args.symbol2:
             data1 = DataFactory(
                 dataname=args.symbol2,
                 historical=False,
-                timeframe=time_frame,
-            )
+                timeframe=time_frame)
 
         broker = store.getbroker()
         cerebro.setbroker(broker)
     else:
-        data0 = DataFactory(
-            dataname=args.symbol1,
-            historical=True,
-            fromdate=args.start_date,
-            todate=args.end_date,
-            timeframe=time_frame,
-        )
+        df1 = web.get_data_alphavantage(
+            args.symbol1,
+            start=args.start_date,
+            end=args.end_date,
+            api_key=os.getenv('ALPHAVANTAGE_API_KEY'))
+        df1.index = pd.to_datetime(df1.index)
+        data0 = bt.feeds.PandasData(dataname=df1)
 
         if args.symbol2:
-            data1 = DataFactory(
-                dataname=args.symbol2,
-                historical=True,
-                fromdate=args.start_date,
-                todate=args.end_date,
-                timeframe=time_frame,
-            )
+            df2 = web.get_data_alphavantage(
+                args.symbol2,
+                start=args.start_date,
+                end=args.end_date,
+                api_key=os.getenv('ALPHAVANTAGE_API_KEY'))
+            df2.index = pd.to_datetime(df2.index)
+            data1 = bt.feeds.PandasData(dataname=df2)
 
     cerebro.adddata(data0)
     if data1 is not None:
@@ -243,7 +245,7 @@ if __name__ == '__main__':
 
         if args.tearsheet:
             cash_market_analysis = strat.analyzers.cash_market.get_analysis()
-            df = Series(cash_market_analysis, index=cash_market_analysis.keys())
+            df = pd.Series(cash_market_analysis, index=cash_market_analysis.keys())
             returns = qs.utils.to_returns(df)
             qs.reports.html(
                 returns,
@@ -253,4 +255,3 @@ if __name__ == '__main__':
 
         if args.plot:
             cerebro.plot(style='candlestick')
-            # cerebro.plot()
