@@ -134,7 +134,7 @@ def parse_args(pargs=None):
     return parser.parse_args()
 
 
-if __name__ == '__main__':
+def get_strategy(strat_type):
     # available strategies
     strategies = {
         "swing": Swing,
@@ -155,14 +155,18 @@ if __name__ == '__main__':
         "double_7s": DoubleSevens,
     }
 
-    args = parse_args()
-
     if args.strategy not in strategies:
         print('Invalid strategy, must select one of {}'.format(strategies.keys()))
         sys.exit()
 
+    return strategies[strat_type]
+
+
+if __name__ == '__main__':
+    args = parse_args()
+
     cerebro = bt.Cerebro()
-    cerebro.addstrategy(strategy=strategies[args.strategy], stake=args.stake)
+    cerebro.addstrategy(strategy=get_strategy(args.strategy), stake=args.stake)
 
     if args.is_backtest:
         cerebro.addobserver(bt.observers.Value)
