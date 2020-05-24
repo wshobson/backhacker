@@ -19,6 +19,8 @@ from strategies.Swing import Swing
 from strategies.SMACross import SMACross
 from strategies.GoldenCross import GoldenCross
 from strategies.TripleCross import TripleCross
+from strategies.RSICross import RSICross
+from strategies.ExtendedCross import ExtendedCross
 from strategies.Slope import Slope
 from strategies.LaguerreRSI import LaguerreRSI
 from strategies.MultipleSMACross import MultipleSMACross
@@ -155,6 +157,8 @@ def get_strategy(strat_type):
         "stop_loss": StopLoss,
         "simple_rsi": SimpleRSI,
         "laguerre_rsi": LaguerreRSI,
+        "rsi_cross": RSICross,
+        "extended_cross": ExtendedCross,
         "donchian_channels": DonchianChannels,
         "keltner_channel": KeltnerChannel,
         "connors_rsi": ConnorsRSI,
