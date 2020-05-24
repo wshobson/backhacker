@@ -39,6 +39,10 @@ from strategies.TwoPeriodRSI import TwoPeriodRSI
 from strategies.DoubleSevens import DoubleSevens
 from strategies.VIXStretches import VIXStretches
 from strategies.WeeklyHigh52 import WeeklyHigh52
+from strategies.PercentMA import PercentMA
+from strategies.PercentMACDRSI import PercentMACDRSI
+from strategies.MACDGradient import MACDGradient
+from strategies.LaguerreWilliams import LaguerreWilliams
 
 matplotlib.style.use('default')
 qs.extend_pandas()
@@ -171,6 +175,10 @@ def get_strategy(strat_type):
         "double_7s": DoubleSevens,
         "vix_stretches": VIXStretches,
         "weekly_high_52": WeeklyHigh52,
+        "percent_ma": PercentMA,
+        "percent_macd_rsi": PercentMACDRSI,
+        "macd_gradient": MACDGradient,
+        "laguerre_williams": LaguerreWilliams,
     }
 
     if args.strategy not in strategies:
