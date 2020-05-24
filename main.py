@@ -31,6 +31,8 @@ from strategies.BollingerBands import BollingerBands
 from strategies.HeikinCandles import HeikinCandles
 from strategies.TwoPeriodRSI import TwoPeriodRSI
 from strategies.DoubleSevens import DoubleSevens
+from strategies.VIXStretches import VIXStretches
+from strategies.WeeklyHigh52 import WeeklyHigh52
 
 matplotlib.style.use('default')
 qs.extend_pandas()
@@ -155,6 +157,8 @@ def get_strategy(strat_type):
         "heikin": HeikinCandles,
         "2_period_rsi": TwoPeriodRSI,
         "double_7s": DoubleSevens,
+        "vix_stretches": VIXStretches,
+        "weekly_high_52": WeeklyHigh52,
     }
 
     if args.strategy not in strategies:
@@ -240,7 +244,6 @@ if __name__ == '__main__':
 
         # print the analyzers
         print('\nTrade Analysis Results for {} in {}:'.format(args.strategy, args.symbol1))
-        print_trade_analysis(strat.analyzers.ta.get_analysis())
         print('Final Portfolio Value: ${:.2f}'.format(portfolio_value))
         print('P/L: ${:.2f}'.format(pnl))
         print('P/L %: {:.2f}%'.format((pnl / start_cash) * 100))
@@ -248,6 +251,7 @@ if __name__ == '__main__':
         print('SQN: {}'.format(round(strat.analyzers.sqn.get_analysis().sqn, 2)))
         print('Normalized Annual Return: {:.2f}%'.format(strat.analyzers.returns.get_analysis()['rnorm100'] or 0.0))
         print('Max Drawdown: {:.2f}%'.format(strat.analyzers.drawdown.get_analysis()['max']['drawdown'] or 0.0))
+        print_trade_analysis(strat.analyzers.ta.get_analysis())
 
         if args.tearsheet:
             cash_market_analysis = strat.analyzers.cash_market.get_analysis()

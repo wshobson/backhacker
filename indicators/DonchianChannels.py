@@ -19,7 +19,7 @@ class DonchianChannels(bt.Indicator):
 
     alias = ('DCH', 'DonchianChannel',)
 
-    lines = ('dcm', 'dch', 'dcl',)  # dc middle, dc high, dc low
+    lines = ('dcm', 'dch', 'dcl', 'buysig', 'sellsig', 'exitlong', 'exitshort',)  # dc middle, dc high, dc low
     params = dict(
         period=20,
         lookback=-1,  # consider current bar or not
@@ -40,3 +40,7 @@ class DonchianChannels(bt.Indicator):
         self.l.dch = bt.ind.Highest(hi, period=self.p.period)
         self.l.dcl = bt.ind.Lowest(lo, period=self.p.period)
         self.l.dcm = (self.l.dch + self.l.dcl) / 2.0  # avg of the above
+        self.l.buysig = self.data.close > self.l.dch
+        self.l.sellsig = self.data.close < self.l.dcl
+        self.l.exitlong = self.data.close < self.l.dcm
+        self.l.exitshort = self.data.close > self.l.dcm

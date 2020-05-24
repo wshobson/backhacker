@@ -21,7 +21,6 @@ class DoubleSevens(BaseStrategy):
     def __init__(self):
         super().__init__()
         self.stop_loss = 0
-        # self.shares = 0
         self.sma200 = bt.ind.SMA(self.datas[0], period=200)
         self.sma = bt.ind.SMA(self.datas[0], period=self.p.sma)
         self.high_bar = bt.ind.Highest(self.datas[0], period=self.p.period)
@@ -36,8 +35,6 @@ class DoubleSevens(BaseStrategy):
         if not self.position:
             if (self.dataclose[0] > self.sma200[0] or self.dataclose[0] > self.sma[0]) and self.dataclose[0] == self.low_bar[0]:
                 self.log('BUY CREATE {0:8.2f}'.format(self.dataclose[0]))
-
-                # self.shares = int(self.broker.get_cash() / self.dataclose[0])
                 self.order = self.buy(size=self.p.stake)
                 # self.stop_loss = (1 - self.p.stop_loss) * self.dataclose[0]
                 self.stop_loss = 0 * self.dataclose[0]  # no stop loss

@@ -13,12 +13,6 @@ class MultipleSMACross(BaseStrategy):
         sma2 = bt.ind.SMA(self.data1, period=30)
         self.crossover1 = bt.ind.CrossOver(sma1, sma2)
 
-    def stop(self):
-        print('==================================================')
-        print('Starting Value - %.2f' % self.broker.startingcash)
-        print('Ending   Value - %.2f' % self.broker.getvalue())
-        print('==================================================')
-
     def next(self):
         self.log('Close, {0:8.2f}'.format(self.dataclose[0]))
 
