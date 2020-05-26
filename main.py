@@ -1,100 +1,53 @@
+#!/usr/bin/env python3
+
 from __future__ import (absolute_import, division, print_function, unicode_literals)
 
-import sys
-import os
 import argparse
+import sys
+from datetime import datetime
+
 import alpaca_backtrader_api
-import matplotlib
 import backtrader as bt
-import quantstats as qs
+import matplotlib
 import pandas as pd
 import pandas_datareader.data as web
-from datetime import datetime
-from functools import reduce
+import quantstats as qs
 
 from analyzers.CashMarket import CashMarket
-
-from strategies.BuyHold import BuyHold
-from strategies.Swing import Swing
-from strategies.SMACross import SMACross
-from strategies.GoldenCross import GoldenCross
-from strategies.TripleCross import TripleCross
-from strategies.RSICross import RSICross
-from strategies.ExtendedCross import ExtendedCross
-from strategies.Slope import Slope
-from strategies.LaguerreRSI import LaguerreRSI
-from strategies.MultipleSMACross import MultipleSMACross
-from strategies.StochasticCross import StochasticCross
-from strategies.StopLoss import StopLoss
-from strategies.SimpleRSI import SimpleRSI
-from strategies.DonchianChannels import DonchianChannels
-from strategies.KeltnerChannel import KeltnerChannel
-from strategies.ConnorsRSI import ConnorsRSI
-from strategies.Momentum import Momentum
-from strategies.TwoBarsDownFiveBarsHold import TwoBarsDownFiveBarsHold
-from strategies.Extrema import Extrema
+from config import ENV, PRODUCTION, ALPACA, ALPHAVANTAGE
 from strategies.BollingerBands import BollingerBands
-from strategies.HeikinCandles import HeikinCandles
-from strategies.TwoPeriodRSI import TwoPeriodRSI
+from strategies.BuyHold import BuyHold
+from strategies.ConnorsRSI import ConnorsRSI
+from strategies.DonchianChannels import DonchianChannels
 from strategies.DoubleSevens import DoubleSevens
-from strategies.VIXStretches import VIXStretches
-from strategies.WeeklyHigh52 import WeeklyHigh52
+from strategies.ExtendedCross import ExtendedCross
+from strategies.Extrema import Extrema
+from strategies.GoldenCross import GoldenCross
+from strategies.HeikinCandles import HeikinCandles
+from strategies.KeltnerChannel import KeltnerChannel
+from strategies.LaguerreRSI import LaguerreRSI
+from strategies.LaguerreWilliams import LaguerreWilliams
+from strategies.MACDGradient import MACDGradient
+from strategies.Momentum import Momentum
+from strategies.MultipleSMACross import MultipleSMACross
 from strategies.PercentMA import PercentMA
 from strategies.PercentMACDRSI import PercentMACDRSI
-from strategies.MACDGradient import MACDGradient
-from strategies.LaguerreWilliams import LaguerreWilliams
+from strategies.RSICross import RSICross
+from strategies.SMACross import SMACross
+from strategies.SimpleRSI import SimpleRSI
+from strategies.Slope import Slope
+from strategies.StochasticCross import StochasticCross
+from strategies.StopLoss import StopLoss
+from strategies.Swing import Swing
+from strategies.TripleCross import TripleCross
+from strategies.TwoBarsDownFiveBarsHold import TwoBarsDownFiveBarsHold
+from strategies.TwoPeriodRSI import TwoPeriodRSI
+from strategies.VIXStretches import VIXStretches
+from strategies.WeeklyHigh52 import WeeklyHigh52
+from utils import print_trade_analysis, str2bool, valid_date
 
 matplotlib.style.use('default')
 qs.extend_pandas()
-
-
-def deep_get(dictionary, keys, default=None):
-    return reduce(lambda d, key: d.get(key, default) if isinstance(d, dict) else default, keys.split("."), dictionary)
-
-
-def valid_date(s):
-    try:
-        return datetime.strptime(s, "%Y-%m-%d")
-    except ValueError:
-        msg = "Not a valid date: '{0}'.".format(s)
-        raise argparse.ArgumentTypeError(msg)
-
-
-def str2bool(v):
-    if isinstance(v, bool):
-        return v
-    if v.lower() in ('yes', 'true', 't', 'y', '1'):
-        return True
-    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
-        return False
-    else:
-        raise argparse.ArgumentTypeError('Boolean value expected.')
-
-
-def print_trade_analysis(analyzer):
-    """
-    Function to print the Technical Analysis results in a nice format.
-    """
-    total_open = round(deep_get(analyzer, 'total.open', default=0.0), 2)
-    total_closed = round(deep_get(analyzer, 'total.closed', default=0.0), 2)
-    total_won = round(deep_get(analyzer, 'won.total', default=0.0), 2)
-    total_lost = round(deep_get(analyzer, 'lost.total', default=0.0), 2)
-    win_streak = round(deep_get(analyzer, 'streak.won.longest', default=0.0), 2)
-    lose_streak = round(deep_get(analyzer, 'streak.lost.longest', default=0.0), 2)
-    pnl_net = round(deep_get(analyzer, 'pnl.net.total', default=0.0), 2)
-    win_rate = round((total_won / total_closed) * 100, 2) if total_won > 0 and total_closed > 0 else 0.0
-
-    h1 = ['Total Open', 'Total Closed', 'Total Won', 'Total Lost']
-    h2 = ['Win Rate', 'Win Streak', 'Losing Streak', 'P/L Net']
-    r1 = [total_open, total_closed, total_won, total_lost]
-    r2 = [win_rate, win_streak, lose_streak, pnl_net]
-
-    print('-' * 65)
-    for (h, r) in [(h1, r1), (h2, r2)]:
-        print('|{:^15s}|{:^15s}|{:^15s}|{:^15s}|'.format(*h))
-        print('|' + '-' * 15 + '|' + '-' * 15 + '|' + '-' * 15 + '|' + '-' * 15 + '|')
-        print('|{:^15.2f}|{:^15.2f}|{:^15.2f}|{:^15.2f}|'.format(*r))
-        print('-' * 65)
 
 
 def parse_args(pargs=None):
@@ -110,15 +63,6 @@ def parse_args(pargs=None):
     parser.add_argument(
         '--strategy', type=str, default='sma_cross',
         help='The strategy to run')
-    parser.add_argument(
-        '--key-id', type=str, default=None,
-        help='Alpaca API Key ID')
-    parser.add_argument(
-        '--secret-key', type=str, default=None,
-        help='Alpaca API Secret Key')
-    parser.add_argument(
-        '--is-backtest', type=str2bool, nargs='?', const=True, default=True,
-        help='false if you want to do live paper trading, true will do a backtest')
     parser.add_argument(
         '--start-date', type=valid_date, default='2020-01-01',
         help='The start date - format YYYY-MM-DD')
@@ -147,7 +91,7 @@ def parse_args(pargs=None):
     return parser.parse_args()
 
 
-def get_strategy(strat_type):
+def get_strategy(args):
     # available strategies
     strategies = {
         "buy_hold": BuyHold,
@@ -185,16 +129,16 @@ def get_strategy(strat_type):
         print('Invalid strategy, must select one of {}'.format(strategies.keys()))
         sys.exit()
 
-    return strategies[strat_type]
+    return strategies[args.strategy]
 
 
-if __name__ == '__main__':
+def main():
     args = parse_args()
 
     cerebro = bt.Cerebro()
-    cerebro.addstrategy(strategy=get_strategy(args.strategy), stake=args.stake)
+    cerebro.addstrategy(strategy=get_strategy(args), stake=args.stake)
 
-    if args.is_backtest:
+    if ENV != PRODUCTION:
         cerebro.addobserver(bt.observers.Value)
         cerebro.addanalyzer(bt.analyzers.SharpeRatio, riskfreerate=0.0)
         cerebro.addanalyzer(bt.analyzers.Returns)
@@ -206,10 +150,10 @@ if __name__ == '__main__':
     time_frame = bt.TimeFrame.TFrame("Minutes") if args.is_minute else bt.TimeFrame.Days
     data1 = None
 
-    if not args.is_backtest:
+    if ENV == PRODUCTION:  # Live trading with Alpaca
         store = alpaca_backtrader_api.AlpacaStore(
-            key_id=args.key_id,
-            secret_key=args.secret_key,
+            key_id=ALPACA.get("key"),
+            secret_key=ALPACA.get("secret"),
             paper=True,
             usePolygon=False)
 
@@ -226,12 +170,12 @@ if __name__ == '__main__':
 
         broker = store.getbroker()
         cerebro.setbroker(broker)
-    else:
+    else:  # Backtesting with AlphaVantage data
         df1 = web.get_data_alphavantage(
             args.symbol1,
             start=args.start_date,
             end=args.end_date,
-            api_key=os.getenv('ALPHAVANTAGE_API_KEY'))
+            api_key=ALPHAVANTAGE.get("key"))
         df1.index = pd.to_datetime(df1.index)
         data0 = bt.feeds.PandasData(dataname=df1)
 
@@ -240,7 +184,7 @@ if __name__ == '__main__':
                 args.symbol2,
                 start=args.start_date,
                 end=args.end_date,
-                api_key=os.getenv('ALPHAVANTAGE_API_KEY'))
+                api_key=ALPHAVANTAGE.get("key"))
             df2.index = pd.to_datetime(df2.index)
             data1 = bt.feeds.PandasData(dataname=df2)
 
@@ -248,7 +192,7 @@ if __name__ == '__main__':
     if data1 is not None:
         cerebro.adddata(data1)
 
-    if args.is_backtest:
+    if ENV != PRODUCTION:
         cerebro.broker.setcash(args.cash)
         cerebro.broker.setcommission(commission=0.0)
 
@@ -257,7 +201,7 @@ if __name__ == '__main__':
 
     results = cerebro.run()
 
-    if args.is_backtest:
+    if ENV != PRODUCTION:
         portfolio_value = cerebro.broker.getvalue()
         pnl = portfolio_value - start_cash
         strat = results[0]
@@ -285,3 +229,16 @@ if __name__ == '__main__':
 
         if args.plot:
             cerebro.plot(style='candlestick')
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        time = datetime.now().strftime("%d-%m-%y %H:%M")
+        print("Bot finished by user at {}".format(time))
+        # send_telegram_message("Bot finished by user at %s" % time)
+    except Exception as err:
+        # send_telegram_message("Bot finished with error: %s" % err)
+        print("Finished with error: ", err)
+        raise

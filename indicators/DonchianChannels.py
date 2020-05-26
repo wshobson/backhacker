@@ -20,6 +20,7 @@ class DonchianChannels(bt.Indicator):
     alias = ('DCH', 'DonchianChannel',)
 
     lines = ('dcm', 'dch', 'dcl', 'buysig', 'sellsig', 'exitlong', 'exitshort',)  # dc middle, dc high, dc low
+
     params = dict(
         period=20,
         lookback=-1,  # consider current bar or not

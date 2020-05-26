@@ -5,10 +5,13 @@ from scipy.stats import linregress
 
 class Momentum(bt.Indicator):
     lines = ('trend',)
-    params = (('period', 90),)
+
+    params = dict(
+        period=90,
+    )
 
     def __init__(self):
-        self.addminperiod(self.params.period)
+        self.addminperiod(self.p.period)
 
     def next(self):
         returns = np.log(self.data.get(size=self.p.period))

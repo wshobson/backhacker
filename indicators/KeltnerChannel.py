@@ -13,6 +13,7 @@ class KeltnerChannel(bt.Indicator):
           - https://analyzingalpha.com/keltner-channels
       """
     lines = ('mid', 'upper', 'lower',)
+
     params = dict(
         ema=20,
         atr=2,

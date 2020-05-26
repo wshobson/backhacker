@@ -1,31 +1,39 @@
 import backtrader as bt
+from config import ENV, PRODUCTION
 from strategies.BaseStrategy import BaseStrategy
 
 
 class SimpleRSI(BaseStrategy):
     params = dict(
-        stake=10,
-        period=14,
-        buy_limit=60,
-        sell_limit=40,
+        period_ema_fast=10,
+        period_ema_slow=100
     )
 
     def __init__(self):
         super().__init__()
-        self.rsi = bt.ind.RSI(self.data.close, period=self.p.period)
+        self.ema_fast = bt.ind.EMA(period=self.p.period_ema_fast)
+        self.ema_slow = bt.ind.EMA(period=self.p.period_ema_slow)
+        self.rsi = bt.ind.RSI()
 
     def next(self):
+        self.update_indicators()
         self.log('Close, {0:8.2f}'.format(self.dataclose[0]))
+
+        if self.status != "LIVE" and ENV == PRODUCTION:  # waiting for live status in production
+            return
 
         if self.order:
             return
 
-        # we only care about going long
-        if not self.position:
-            if self.rsi > self.p.buy_limit:
-                self.log('BUY CREATE {0:8.2f}'.format(self.dataclose[0]))
-                self.order = self.buy(size=self.p.stake)
-        else:
-            if self.rsi < self.p.sell_limit:
-                self.log('SELL CREATE, {0:8.2f}'.format(self.dataclose[0]))
-                self.order = self.sell(size=self.p.stake)
+        # stop Loss
+        if self.profit < -0.03:
+            self.log("STOP LOSS: percentage %.3f %%" % self.profit)
+            self.short()
+
+        if self.last_operation != "BUY":
+            if self.rsi < 30 and self.ema_fast > self.ema_slow:
+                self.long()
+
+        if self.last_operation != "SELL":
+            if self.rsi > 70:
+                self.short()

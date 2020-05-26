@@ -6,7 +6,10 @@ class Streak(bt.ind.PeriodN):
     Keeps a counter of the current upwards/downwards/neutral streak
     """
     lines = ('streak',)
-    params = dict(period=2)  # need prev/cur days (2) for comparisons
+
+    params = dict(
+        period=2,  # need prev/cur days (2) for comparisons
+    )
 
     curstreak = 0
 
@@ -32,7 +35,12 @@ class ConnorsRSI(bt.Indicator):
       - https://analyzingalpha.com/backtrader-backtesting-trading-strategies
     """
     lines = ('crsi',)
-    params = dict(prsi=3, pstreak=2, prank=100)
+
+    params = dict(
+        prsi=3,
+        pstreak=2,
+        prank=100
+    )
 
     def __init__(self):
         # Calculate the components

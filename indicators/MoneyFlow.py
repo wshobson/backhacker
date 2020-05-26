@@ -3,7 +3,10 @@ import backtrader as bt
 
 class MFI(bt.Indicator):
     lines = ('mfi',)
-    params = dict(period=14)
+
+    params = dict(
+        period=14,
+    )
 
     alias = ('MoneyFlowIndicator',)
 

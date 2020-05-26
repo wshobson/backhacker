@@ -2,6 +2,8 @@ import backtrader as bt
 
 
 class Laguerre(bt.Indicator):
+    lines = ("pctRankT", "pctRankB", "pctileB", "wrnpctileB", "ppoT", "ppoB")
+
     params = dict(
         short_gamma=0.4,
         long_gamma=0.8,
@@ -10,8 +12,6 @@ class Laguerre(bt.Indicator):
         lkbT=200,
         lkbB=200,
     )
-
-    lines = ("pctRankT", "pctRankB", "pctileB", "wrnpctileB", "ppoT", "ppoB")
 
     lmas_l0, lmas_l1, lmas_l2, lmas_l3 = 0.0, 0.0, 0.0, 0.0
     lmal_l0, lmal_l1, lmal_l2, lmal_l3 = 0.0, 0.0, 0.0, 0.0
