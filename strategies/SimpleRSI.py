@@ -5,6 +5,7 @@ from strategies.BaseStrategy import BaseStrategy
 
 class SimpleRSI(BaseStrategy):
     params = dict(
+        stake=10,
         period_ema_fast=10,
         period_ema_slow=100
     )
@@ -19,7 +20,7 @@ class SimpleRSI(BaseStrategy):
         self.update_indicators()
         self.log('Close, {0:8.2f}'.format(self.dataclose[0]))
 
-        if self.status != "LIVE" and ENV == PRODUCTION:  # waiting for live status in production
+        if self.status != "LIVE" and ENV == PRODUCTION:
             return
 
         if self.order:
@@ -32,8 +33,8 @@ class SimpleRSI(BaseStrategy):
 
         if self.last_operation != "BUY":
             if self.rsi < 30 and self.ema_fast > self.ema_slow:
-                self.long()
+                self.long(size=self.p.stake)
 
         if self.last_operation != "SELL":
             if self.rsi > 70:
-                self.short()
+                self.short(size=self.p.stake)

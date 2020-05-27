@@ -1,24 +1,31 @@
 import backtrader as bt
+from config import ENV, PRODUCTION
 from strategies.BaseStrategy import BaseStrategy
 
 
 class SMACross(BaseStrategy):
+    params = dict(
+        stake=10,
+        p_fast=10,
+        p_slow=30,
+    )
+
     def __init__(self):
         super().__init__()
-        sma1, sma2 = bt.ind.SMA(period=10), bt.ind.SMA(period=30)
+        sma1, sma2 = bt.ind.SMA(period=self.p.p_fast), bt.ind.SMA(period=self.p.p_slow)
         self.crossover = bt.ind.CrossOver(sma1, sma2)
 
     def next(self):
-        # Log the closing prices of the series from the reference
+        self.update_indicators()
         self.log('Close, {0:8.2f}'.format(self.dataclose[0]))
 
-        if self.order:  # check if order is pending, if so, then break out
+        if self.status != "LIVE" and ENV == PRODUCTION:
             return
 
-        if not self.position:
-            if self.crossover > 0:
-                self.log('BUY CREATE {0:8.2f}'.format(self.dataclose[0]))
-                self.order = self.buy(size=self.p.stake)
-        elif self.crossover < 0:
-            self.log('CLOSE CREATE, {0:8.2f}'.format(self.dataclose[0]))
-            self.order = self.close(size=self.p.stake)
+        if self.order:
+            return
+
+        if self.last_operation != "BUY" and self.crossover > 0:
+            self.long(size=self.p.stake)
+        if self.last_operation != "SELL" and self.crossover < 0:
+            self.short(size=self.p.stake)

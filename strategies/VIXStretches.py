@@ -1,4 +1,5 @@
 import backtrader as bt
+from config import ENV, PRODUCTION
 from strategies.BaseStrategy import BaseStrategy
 
 
@@ -33,17 +34,19 @@ class VIXStretches(BaseStrategy):
         self.vixsma = bt.ind.SMA(self.vixstd, period=self.p.vix_sma)
 
     def next(self):
+        self.update_indicators()
         self.log('Close, {0:8.2f}'.format(self.spydataclose[0]))
+
+        if self.status != "LIVE" and ENV == PRODUCTION:
+            return
 
         if self.order:
             return
 
-        if not self.getposition(self.data0):
+        if self.last_operation != "BUY":
             vix_stretched = all(self.vixstd[i] > (self.vixsma[i] * (1 + self.p.stretched_pct / 100.0)) for i in range(0, -self.p.k_periods, -1))
             if self.spydataclose[0] > self.spysma[0] and vix_stretched:
-                self.log('BUY CREATE {0:8.2f}'.format(self.spydataclose[0]))
-                self.order = self.buy(data=self.data0, size=self.p.stake)
-        else:
+                self.long(size=self.p.stake)
+        if self.last_operation != "SELL":
             if self.spyrsi[0] >= self.p.rsi_bound:
-                self.log('CLOSE CREATE, {0:8.2f}'.format(self.spydataclose[0]))
-                self.order = self.close(data=self.data0, size=self.p.stake)
+                self.short(size=self.p.stake)

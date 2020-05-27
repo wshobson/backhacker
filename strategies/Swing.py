@@ -1,25 +1,31 @@
+from config import ENV, PRODUCTION
 from strategies.BaseStrategy import BaseStrategy
 from indicators.Swing import Swing as SwingInd
 
 
 class Swing(BaseStrategy):
+    params = dict(
+        stake=100,
+        period=7,
+    )
+
     def __init__(self):
         super().__init__()
-        self.indicator = SwingInd(period=14)
+        self.indicator = SwingInd(period=self.p.period)
 
     def next(self):
-        # Log the closing prices of the series from the reference
+        self.update_indicators()
         self.log('Close, {0:8.2f}'.format(self.dataclose[0]))
 
-        if self.order:  # check if order is pending, if so, then break out
+        if self.status != "LIVE" and ENV == PRODUCTION:
             return
 
-        # we are only interested in going long
-        if not self.position:
+        if self.order:
+            return
+
+        if self.last_operation != "BUY":
             if self.indicator.l.signal[0] == -1:
-                self.log('BUY CREATE {0:8.2f}'.format(self.dataclose[0]))
-                self.order = self.buy(size=self.p.stake)
-        else:
+                self.long(size=self.p.stake)
+        if self.last_operation != "SELL":
             if self.indicator.l.signal[0] == 1:
-                self.log('CLOSE CREATE, {0:8.2f}'.format(self.dataclose[0]))
-                self.order = self.close(size=self.p.stake)
+                self.short(size=self.p.stake)

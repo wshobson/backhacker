@@ -1,4 +1,5 @@
 import backtrader as bt
+from config import ENV, PRODUCTION
 from strategies.BaseStrategy import BaseStrategy
 
 
@@ -15,6 +16,9 @@ class MultipleSMACross(BaseStrategy):
 
     def next(self):
         self.log('Close, {0:8.2f}'.format(self.dataclose[0]))
+
+        if self.status != "LIVE" and ENV == PRODUCTION:
+            return
 
         if self.order:
             return

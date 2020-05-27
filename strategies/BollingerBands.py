@@ -1,5 +1,7 @@
-from strategies.BaseStrategy import BaseStrategy
 import backtrader as bt
+
+from config import ENV, PRODUCTION
+from strategies.BaseStrategy import BaseStrategy
 
 
 class BollingerBands(BaseStrategy):
@@ -14,37 +16,31 @@ class BollingerBands(BaseStrategy):
         self.redline = None
         self.blueline = None
 
-        # Add a BBand indicator
-        self.bband = bt.indicators.BBands(self.datas[0], period=self.params.bbands_period)
+        self.bband = bt.indicators.BBands(self.datas[0], period=self.p.bbands_period)
 
     def next(self):
+        self.update_indicators()
         self.log('Close, %.2f' % self.dataclose[0])
+
+        if self.status != "LIVE" and ENV == PRODUCTION:  # waiting for live status in production
+            return
 
         if self.order:
             return
 
-        if self.dataclose < self.bband.lines.bot and not self.position:
+        if self.dataclose < self.bband.l.bot and self.last_operation != "BUY":
             self.redline = True
 
-        if self.dataclose > self.bband.lines.top and self.position:
+        if self.dataclose > self.bband.l.top and self.last_operation != "SELL":
             self.blueline = True
 
-        if self.dataclose > self.bband.lines.mid and not self.position and self.redline:
-            # BUY, BUY, BUY!!! (with all possible default parameters)
-            self.log('BUY CREATE, %.2f' % self.dataclose[0])
-            # Keep track of the created order to avoid a 2nd order
-            self.order = self.buy(size=self.p.stake)
+        if self.dataclose > self.bband.l.mid and self.last_operation != "BUY" and self.redline:
+            self.long(size=self.p.stake)
 
-        if self.dataclose > self.bband.lines.top and not self.position:
-            # BUY, BUY, BUY!!! (with all possible default parameters)
-            self.log('BUY CREATE, %.2f' % self.dataclose[0])
-            # Keep track of the created order to avoid a 2nd order
-            self.order = self.buy(size=self.p.stake)
+        if self.dataclose > self.bband.l.top and self.last_operation != "BUY":
+            self.long(size=self.p.stake)
 
-        if self.dataclose < self.bband.lines.mid and self.position and self.blueline:
-            # SELL, SELL, SELL!!! (with all possible default parameters)
-            self.log('SELL CREATE, %.2f' % self.dataclose[0])
+        if self.dataclose < self.bband.l.mid and self.last_operation != "SELL" and self.blueline:
             self.blueline = False
             self.redline = False
-            # Keep track of the created order to avoid a 2nd order
-            self.order = self.sell(size=self.p.stake)
+            self.short(size=self.p.stake)

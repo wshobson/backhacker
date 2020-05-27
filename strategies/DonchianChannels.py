@@ -1,5 +1,6 @@
-from strategies.BaseStrategy import BaseStrategy
+from config import ENV, PRODUCTION
 from indicators.DonchianChannels import DonchianChannels as DonchianChannelsInd
+from strategies.BaseStrategy import BaseStrategy
 
 
 class DonchianChannels(BaseStrategy):
@@ -8,15 +9,16 @@ class DonchianChannels(BaseStrategy):
         self.indicator = DonchianChannelsInd()
 
     def next(self):
-        # Log the closing prices of the series from the reference
+        self.update_indicators()
         self.log('Close, {0:8.2f}'.format(self.dataclose[0]))
 
-        if self.order:  # check if order is pending, if so, then break out
+        if self.status != "LIVE" and ENV == PRODUCTION:  # waiting for live status in production
+            return
+
+        if self.order:
             return
 
         if self.data[0] > self.indicator.dch[0]:
-            self.log('BUY CREATE {0:8.2f}'.format(self.dataclose[0]))
-            self.order = self.buy(size=self.p.stake)
+            self.long(size=self.p.stake)
         elif self.data[0] < self.indicator.dcl[0]:
-            self.log('SELL CREATE, {0:8.2f}'.format(self.dataclose[0]))
-            self.order = self.sell(size=self.p.stake)
+            self.short(size=self.p.stake)

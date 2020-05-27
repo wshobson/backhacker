@@ -1,4 +1,5 @@
 import backtrader as bt
+from config import ENV, PRODUCTION
 from strategies.BaseStrategy import BaseStrategy
 from indicators.Laguerre import Laguerre
 from indicators.VIXFix import VIXFix
@@ -69,24 +70,24 @@ class LaguerreWilliams(BaseStrategy):
         self.pending_sell = False
 
     def next(self):
+        self.update_indicators()
         self.log('Close, {0:8.2f}'.format(self.dataclose[0]))
+
+        if self.status != "LIVE" and ENV == PRODUCTION:
+            return
 
         if self.order:
             return
 
-        if not self.position:
+        if self.last_operation != "BUY":
             if (self.wvf.lines.wvf > self.wvf.lines.bbands_top or self.wvf.lines.wvf > self.wvf.l.range_high) and self.lag.l.pctRankB <= self.lag.l.pctileB and self.prank <= self.p.buy_limit1:
-                self.log('PENDING BUY, %.2f %.2f %.2f' % (self.dataclose[0], self.lag.lines.pctRankB[0], self.prank[0]))
                 self.pending_buy = True
             elif self.pending_buy == True and self.lag.l.pctRankB >= self.lag.l.wrnpctileB and self.prank >= self.p.buy_limit2:
                 self.pending_buy = False
-                self.log('BUY CREATE, %.2f %.2f %.2f' % (self.dataclose[0], self.lag.l.pctRankB[0], self.prank[0]))
-                self.order = self.buy(size=self.p.stake)
-        else:
+                self.long(size=self.p.stake)
+        if self.last_operation != "SELL":
             if self.lag.l.pctRankT >= self.p.pctile and self.prank >= self.p.sell_limit1:
-                self.log('PENDING SELL, %.2f %.2f %.2f' % (self.dataclose[0], self.lag.l.pctRankT[0], self.prank[0]))
                 self.pending_sell = True
             elif self.pending_sell == True and self.lag.lines.pctRankT <= self.p.wrnpctile and self.prank <= self.p.sell_limit2:
                 self.pending_sell = False
-                self.log('SELL CREATE, %.2f %.2f %.2f' % (self.dataclose[0], self.lag.l.pctRankT[0], self.prank[0]))
-                self.order = self.sell(size=self.p.stake)
+                self.short(size=self.p.stake)

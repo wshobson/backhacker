@@ -1,4 +1,5 @@
 import backtrader as bt
+from config import ENV, PRODUCTION
 from strategies.BaseStrategy import BaseStrategy
 
 
@@ -38,22 +39,24 @@ class PercentMACDRSI(BaseStrategy):
         self.pending_sell = False
 
     def next(self):
+        self.update_indicators()
         self.log('Close, {0:8.2f}'.format(self.dataclose[0]))
+
+        if self.status != "LIVE" and ENV == PRODUCTION:
+            return
 
         if self.order:
             return
 
-        if not self.position:
+        if self.last_operation != "BUY":
             if self.prank_rsi <= self.buy_limit_rsi1 and self.prank_macd <= self.buy_limit_macd1:
                 self.pending_buy = True
             elif self.pending_buy == True and self.prank_rsi >= self.buy_limit_rsi2 and self.prank_macd >= self.buy_limit_macd2:
                 self.pending_buy = False
-                self.log('BUY CREATE {0:8.2f}'.format(self.dataclose[0]))
-                self.order = self.buy(size=self.p.stake)
-        else:
+                self.long(size=self.p.stake)
+        if self.last_operation != "SELL":
             if self.prank_rsi >= self.sell_limit_rsi1 and self.prank_macd >= self.sell_limit_macd1:
                 self.pending_sell = True
             elif self.pending_sell == True and self.prank_rsi <= self.sell_limit_rsi2 and self.prank_macd <= self.sell_limit_macd2:
                 self.pending_sell = False
-                self.log('SELL CREATE, {0:8.2f}'.format(self.dataclose[0]))
-                self.order = self.sell(size=self.p.stake)
+                self.short(size=self.p.stake)

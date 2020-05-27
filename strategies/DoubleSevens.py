@@ -1,4 +1,5 @@
 import backtrader as bt
+from config import ENV, PRODUCTION
 from strategies.BaseStrategy import BaseStrategy
 
 
@@ -27,18 +28,18 @@ class DoubleSevens(BaseStrategy):
         self.low_bar = bt.ind.Lowest(self.datas[0], period=self.p.period)
 
     def next(self):
+        self.update_indicators()
         self.log('Close, {0:8.2f}'.format(self.dataclose[0]))
+
+        if self.status != "LIVE" and ENV == PRODUCTION:
+            return
 
         if self.order:
             return
 
-        if not self.position:
+        if self.last_operation != "BUY":
             if (self.dataclose[0] > self.sma200[0] or self.dataclose[0] > self.sma[0]) and self.dataclose[0] == self.low_bar[0]:
-                self.log('BUY CREATE {0:8.2f}'.format(self.dataclose[0]))
-                self.order = self.buy(size=self.p.stake)
-                # self.stop_loss = (1 - self.p.stop_loss) * self.dataclose[0]
-                self.stop_loss = 0 * self.dataclose[0]  # no stop loss
-        else:
+                self.long(size=self.p.stake)
+        if self.last_operation != "SELL":
             if self.dataclose[0] == self.high_bar[0] or self.data.low[0] < self.stop_loss:
-                self.log('SELL CREATE, {0:8.2f}'.format(self.dataclose[0]))
-                self.order = self.sell(size=self.p.stake)
+                self.short(size=self.p.stake)

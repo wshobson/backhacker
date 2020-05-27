@@ -1,6 +1,6 @@
-from strategies.BaseStrategy import BaseStrategy
 from config import ENV, PRODUCTION
 from indicators.ConnorsRSI import ConnorsRSI as ConnorsRSIInd
+from strategies.BaseStrategy import BaseStrategy
 
 
 class ConnorsRSI(BaseStrategy):
@@ -20,8 +20,8 @@ class ConnorsRSI(BaseStrategy):
 
         if self.last_operation != "BUY":
             if self.indicator.crsi[0] <= 10:
-                self.long()
+                self.long(size=self.p.stake)
 
         if self.last_operation != "SELL":
             if self.indicator.crsi[0] >= 90:
-                self.short()
+                self.short(size=self.p.stake)

@@ -7,10 +7,6 @@ from config import ENV, DEVELOPMENT, PRODUCTION
 
 
 class BaseStrategy(bt.Strategy):
-    params = dict(
-        stake=10,
-    )
-
     def __init__(self):
         self.dataclose = self.datas[0].close
         self.last_operation = "SELL"
@@ -50,11 +46,11 @@ class BaseStrategy(bt.Strategy):
             # send_telegram_message(txt)
             pass
 
-    # def notify_data(self, data, status, *args, **kwargs):
-    #     self.status = data._getstatusname(status)
-    #     print(self.status)
-    #     if status == data.LIVE:
-    #         self.log("LIVE DATA - Ready to trade")
+    def notify_data(self, data, status, *args, **kwargs):
+        self.status = data._getstatusname(status)
+        print(self.status)
+        if status == data.LIVE:
+            self.log("LIVE DATA - Ready to trade")
 
     def notify_trade(self, trade):
         if not trade.isclosed:
@@ -104,13 +100,13 @@ class BaseStrategy(bt.Strategy):
 
         self.order = None
 
-    def short(self):
+    def short(self, size=10):
         if self.last_operation == "SELL":
             return
 
         if ENV == DEVELOPMENT:
             self.log("Sell ordered: $%.2f" % self.dataclose[0], True)
-            return self.sell(size=self.p.stake)
+            return self.sell(size=size)
 
         cash = self.broker.get_cash()
         value = self.broker.get_value()
@@ -121,7 +117,7 @@ class BaseStrategy(bt.Strategy):
         self.log("Sell ordered: $%.2f. Amount %.6f - $%.2f USDT" % (self.dataclose[0], amount, value), True)
         return self.sell(size=amount)
 
-    def long(self):
+    def long(self, size=10):
         if self.last_operation == "BUY":
             return
 
@@ -129,7 +125,7 @@ class BaseStrategy(bt.Strategy):
 
         if ENV == DEVELOPMENT:
             self.log("Buy ordered: $%.2f" % self.dataclose[0], True)
-            return self.buy(size=self.p.stake)
+            return self.buy(size=size)
 
         cash = self.broker.get_cash()
         value = self.broker.get_value()
@@ -138,5 +134,5 @@ class BaseStrategy(bt.Strategy):
 
         price = self.dataclose[0]
         amount = (value / price) * 0.99  # Workaround to avoid precision issues
-        self.log("Buy ordered: $%.2f. Amount %.6f. Balance $%.2f USDT" % (self.dataclose[0], amount, value), True)
+        self.log("Buy ordered: $%.2f. Amount %.6f. Balance $%.2f USDT" % (price, amount, value), True)
         return self.buy(size=amount)

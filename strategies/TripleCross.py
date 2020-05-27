@@ -1,4 +1,5 @@
 import backtrader as bt
+from config import ENV, PRODUCTION
 from strategies.BaseStrategy import BaseStrategy
 
 
@@ -17,16 +18,18 @@ class TripleCross(BaseStrategy):
         self.ma3 = bt.ind.SMA(self.datas[0], period=self.p.ma3_period)
 
     def next(self):
+        self.update_indicators()
         self.log('Close, {0:8.2f}'.format(self.dataclose[0]))
+
+        if self.status != "LIVE" and ENV == PRODUCTION:
+            return
 
         if self.order:
             return
 
-        if not self.position:
+        if self.last_operation != "BUY":
             if self.ma1 > self.ma2 > self.ma3:
-                self.log('BUY CREATE {0:8.2f}'.format(self.dataclose[0]))
-                self.order = self.buy(size=self.p.stake)
-        else:
+                self.long(size=self.p.stake)
+        if self.last_operation != "SELL":
             if self.ma1 < self.ma2 < self.ma3:
-                self.log('SELL CREATE, {0:8.2f}'.format(self.dataclose[0]))
-                self.order = self.sell(size=self.p.stake)
+                self.short(size=self.p.stake)
