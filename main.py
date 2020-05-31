@@ -44,7 +44,7 @@ from strategies.TwoBarsDownFiveBarsHold import TwoBarsDownFiveBarsHold
 from strategies.TwoPeriodRSI import TwoPeriodRSI
 from strategies.VIXStretches import VIXStretches
 from strategies.WeeklyHigh52 import WeeklyHigh52
-from utils import print_trade_analysis, str2bool, valid_date
+from util.misc import print_trade_analysis, str2bool, valid_date
 
 matplotlib.style.use('default')
 qs.extend_pandas()
