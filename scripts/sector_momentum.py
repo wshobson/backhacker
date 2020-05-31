@@ -133,13 +133,6 @@ if __name__ == '__main__':
         data.plotinfo.plotmaster = benchdata
         cerebro.adddata(data)
 
-    cerebro.addobserver(bt.observers.Value)
-    cerebro.addanalyzer(bt.analyzers.SharpeRatio, riskfreerate=0.0)
-    cerebro.addanalyzer(bt.analyzers.Returns)
-    cerebro.addanalyzer(bt.analyzers.DrawDown)
-    cerebro.addanalyzer(bt.analyzers.TradeAnalyzer, _name="ta")
-    cerebro.addanalyzer(bt.analyzers.SQN, _name="sqn")
-
     print('Starting Portfolio Value: %.2f' % cerebro.broker.getvalue())
 
     stop = len(ETF_TICKERS) + 1
