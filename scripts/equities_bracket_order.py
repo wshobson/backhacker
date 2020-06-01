@@ -1,15 +1,13 @@
-from datetime import datetime, timedelta
 import math
 import os
+from datetime import timedelta
+
 import backtrader as bt
 import numpy as np
 from scipy.stats import linregress
+
 from util.misc import deep_get
 
-START_DATE = '2000-01-01'
-END_DATE = '2020-05-29'
-START = datetime.strptime(START_DATE, '%Y-%m-%d')
-END = datetime.strptime(END_DATE, '%Y-%m-%d')
 BENCHMARK_TICKER = 'SPY'
 
 EXCLUDE_WINDOW = 10

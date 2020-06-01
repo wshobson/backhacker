@@ -1,5 +1,4 @@
 import os
-from datetime import datetime
 
 import backtrader as bt
 import matplotlib
@@ -8,10 +7,6 @@ from scipy.stats import linregress
 
 matplotlib.use('Qt5Agg')
 
-START_DATE = '2000-01-01'
-START = datetime.strptime(START_DATE, '%Y-%m-%d')
-END_DATE = '2020-05-29'
-END = datetime.strptime(END_DATE, '%Y-%m-%d')
 ETF_TICKERS = ['XLB', 'XLE', 'XLF', 'XLI', 'XLK', 'XLP', 'XLU', 'XLV', 'XLY']
 
 
