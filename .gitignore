@@ -134,3 +134,5 @@ dmypy.json
 screener-output.txt
 output/
 *.csv
+run-backhacker.sh
+backhacker.log
