@@ -4,6 +4,10 @@ from strategies.BaseStrategy import BaseStrategy
 
 
 class MultipleSMACross(BaseStrategy):
+    params = dict(
+        stake=10,
+    )
+
     def __init__(self):
         super().__init__()
         sma1 = bt.ind.SMA(self.data0, period=10)

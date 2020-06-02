@@ -4,6 +4,10 @@ from indicators.Momentum import Momentum as MomentumInd
 
 
 class Momentum(BaseStrategy):
+    params = dict(
+        stake=10,
+    )
+
     def __init__(self):
         super().__init__()
         self.i = 0

@@ -4,6 +4,10 @@ from strategies.BaseStrategy import BaseStrategy
 
 
 class ConnorsRSI(BaseStrategy):
+    params = dict(
+        stake=10,
+    )
+
     def __init__(self):
         super().__init__()
         self.indicator = ConnorsRSIInd()
