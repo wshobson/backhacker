@@ -9,6 +9,7 @@ from datetime import datetime
 import alpaca_backtrader_api
 import backtrader as bt
 import matplotlib
+import pytz
 import pandas as pd
 # import pandas_datareader.data as web
 import quantstats as qs
@@ -147,8 +148,9 @@ def main():
         cerebro.addanalyzer(bt.analyzers.SQN, _name="sqn")
         cerebro.addanalyzer(CashMarket, _name="cash_market")
 
-    time_frame = bt.TimeFrame.TFrame("Minutes") if args.is_minute else bt.TimeFrame.Days
+    time_frame = bt.TimeFrame.Minutes if args.is_minute else bt.TimeFrame.Days
     data1 = None
+    timezone = pytz.timezone('US/Eastern')
 
     store = alpaca_backtrader_api.AlpacaStore(
         key_id=ALPACA.get("key"),
@@ -162,10 +164,14 @@ def main():
         data0 = DataFactory(
             dataname=args.symbol1,
             historical=False,
+            compression=1,
+            tz=timezone,
             timeframe=time_frame)
         if args.symbol2:
             data1 = DataFactory(
                 dataname=args.symbol2,
+                compression=1,
+                tz=timezone,
                 historical=False,
                 timeframe=time_frame)
 
