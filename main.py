@@ -10,7 +10,7 @@ import alpaca_backtrader_api
 import backtrader as bt
 import matplotlib
 import pandas as pd
-import pandas_datareader.data as web
+# import pandas_datareader.data as web
 import quantstats as qs
 
 from analyzers.CashMarket import CashMarket
@@ -150,14 +150,15 @@ def main():
     time_frame = bt.TimeFrame.TFrame("Minutes") if args.is_minute else bt.TimeFrame.Days
     data1 = None
 
-    if ENV == PRODUCTION:  # Live trading with Alpaca
-        store = alpaca_backtrader_api.AlpacaStore(
-            key_id=ALPACA.get("key"),
-            secret_key=ALPACA.get("secret"),
-            paper=True,
-            usePolygon=False)
+    store = alpaca_backtrader_api.AlpacaStore(
+        key_id=ALPACA.get("key"),
+        secret_key=ALPACA.get("secret"),
+        paper=True,
+        usePolygon=False)
 
-        DataFactory = store.getdata
+    DataFactory = store.getdata
+
+    if ENV == PRODUCTION:  # Live trading with Alpaca
         data0 = DataFactory(
             dataname=args.symbol1,
             historical=False,
@@ -170,23 +171,40 @@ def main():
 
         broker = store.getbroker()
         cerebro.setbroker(broker)
-    else:  # Backtesting with AlphaVantage data
-        df1 = web.get_data_alphavantage(
-            args.symbol1,
-            start=args.start_date,
-            end=args.end_date,
-            api_key=ALPHAVANTAGE.get("key"))
-        df1.index = pd.to_datetime(df1.index)
-        data0 = bt.feeds.PandasData(dataname=df1)
+    else:
+        data0 = DataFactory(
+            dataname=args.symbol1,
+            historical=True,
+            fromdate=args.start_date,
+            todate=args.end_date,
+            timeframe=time_frame,
+        )
 
         if args.symbol2:
-            df2 = web.get_data_alphavantage(
-                args.symbol2,
-                start=args.start_date,
-                end=args.end_date,
-                api_key=ALPHAVANTAGE.get("key"))
-            df2.index = pd.to_datetime(df2.index)
-            data1 = bt.feeds.PandasData(dataname=df2)
+            data1 = DataFactory(
+                dataname=args.symbol2,
+                historical=True,
+                fromdate=args.start_date,
+                todate=args.end_date,
+                timeframe=time_frame,
+            )
+    # else:  # Backtesting with AlphaVantage data
+    #     df1 = web.get_data_alphavantage(
+    #         args.symbol1,
+    #         start=args.start_date,
+    #         end=args.end_date,
+    #         api_key=ALPHAVANTAGE.get("key"))
+    #     df1.index = pd.to_datetime(df1.index)
+    #     data0 = bt.feeds.PandasData(dataname=df1)
+    #
+    #     if args.symbol2:
+    #         df2 = web.get_data_alphavantage(
+    #             args.symbol2,
+    #             start=args.start_date,
+    #             end=args.end_date,
+    #             api_key=ALPHAVANTAGE.get("key"))
+    #         df2.index = pd.to_datetime(df2.index)
+    #         data1 = bt.feeds.PandasData(dataname=df2)
 
     cerebro.adddata(data0)
     if data1 is not None:
