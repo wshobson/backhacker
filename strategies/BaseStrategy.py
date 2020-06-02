@@ -108,8 +108,8 @@ class BaseStrategy(bt.Strategy):
             self.log("Sell ordered: $%.2f" % self.dataclose[0], True)
             return self.sell(size=size)
 
-        cash = self.broker.get_cash()
-        value = self.broker.get_value()
+        cash = self.broker.getcash()
+        value = self.broker.getvalue()
         if cash <= 0:
             return
 
@@ -127,8 +127,8 @@ class BaseStrategy(bt.Strategy):
             self.log("Buy ordered: $%.2f" % self.dataclose[0], True)
             return self.buy(size=size)
 
-        cash = self.broker.get_cash()
-        value = self.broker.get_value()
+        cash = self.broker.getcash()
+        value = self.broker.getvalue()
         if cash <= 0:
             return
 
