@@ -1,11 +1,8 @@
 import os
 
 import backtrader as bt
-import matplotlib
 import numpy as np
 from scipy.stats import linregress
-
-matplotlib.use('Qt5Agg')
 
 ETF_TICKERS = ['XLB', 'XLE', 'XLF', 'XLI', 'XLK', 'XLP', 'XLU', 'XLV', 'XLY']
 
