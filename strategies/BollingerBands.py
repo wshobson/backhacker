@@ -19,7 +19,7 @@ class BollingerBands(BaseStrategy):
         self.bband = bt.indicators.BBands(self.datas[0], period=self.p.bbands_period)
 
     def next(self):
-        self.update_indicators()
+        self.update_profit()
         self.log('Close, %.2f' % self.dataclose[0])
 
         if self.status != "LIVE" and ENV == PRODUCTION:  # waiting for live status in production

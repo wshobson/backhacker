@@ -15,7 +15,7 @@ import pandas as pd
 import quantstats as qs
 
 from analyzers.CashMarket import CashMarket
-from config import ENV, PRODUCTION, ALPACA, ALPHAVANTAGE
+from config import ENV, PRODUCTION, ALPACA
 from strategies.BollingerBands import BollingerBands
 from strategies.BuyHold import BuyHold
 from strategies.ConnorsRSI import ConnorsRSI
@@ -45,11 +45,11 @@ from strategies.TwoBarsDownFiveBarsHold import TwoBarsDownFiveBarsHold
 from strategies.TwoPeriodRSI import TwoPeriodRSI
 from strategies.VIXStretches import VIXStretches
 from strategies.WeeklyHigh52 import WeeklyHigh52
+from strategies.ScalperAlert import ScalperStrategy
 from util.misc import print_trade_analysis, str2bool, valid_date
 
 matplotlib.style.use('default')
 qs.extend_pandas()
-
 
 def parse_args(pargs=None):
     parser = argparse.ArgumentParser(
@@ -124,10 +124,11 @@ def get_strategy(args):
         "percent_macd_rsi": PercentMACDRSI,
         "macd_gradient": MACDGradient,
         "laguerre_williams": LaguerreWilliams,
+        "scalper_alert": ScalperStrategy,
     }
 
     if args.strategy not in strategies:
-        print('Invalid strategy, must select one of {}'.format(strategies.keys()))
+        print('Invalid strategy, must select one of {}'.format(strategies.keys() + signals.keys()))
         sys.exit()
 
     return strategies[args.strategy]
@@ -150,7 +151,7 @@ def main():
 
     time_frame = bt.TimeFrame.Minutes if args.is_minute else bt.TimeFrame.Days
     data1 = None
-    timezone = pytz.timezone('US/Eastern')
+    timezone = pytz.timezone('US/Pacific')
 
     store = alpaca_backtrader_api.AlpacaStore(
         key_id=ALPACA.get("key"),
@@ -194,6 +195,7 @@ def main():
                 todate=args.end_date,
                 timeframe=time_frame,
             )
+
     # else:  # Backtesting with AlphaVantage data
     #     df1 = web.get_data_alphavantage(
     #         args.symbol1,
