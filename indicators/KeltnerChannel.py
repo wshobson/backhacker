@@ -15,8 +15,8 @@ class KeltnerChannel(bt.Indicator):
     lines = ('mid', 'upper', 'lower',)
 
     params = dict(
-        ema=20,
-        atr=2,
+        ema=21,
+        atr=1.5,
     )
 
     plotinfo = dict(subplot=False)  # plot along with data

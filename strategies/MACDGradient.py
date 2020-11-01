@@ -15,7 +15,7 @@ class MACDGradient(BaseStrategy):
         self.MACD = bt.ind.MACD(self.data.close, period_me1=self.p.period_me1, period_me2=self.p.period_me2)
 
     def next(self):
-        self.update_indicators()
+        self.update_profit()
         self.log('Close, {0:8.2f}'.format(self.dataclose[0]))
 
         if self.status != "LIVE" and ENV == PRODUCTION:

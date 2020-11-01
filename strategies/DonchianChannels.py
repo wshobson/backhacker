@@ -14,7 +14,7 @@ class DonchianChannels(BaseStrategy):
         self.indicator = DonchianChannelsInd()
 
     def next(self):
-        self.update_indicators()
+        self.update_profit()
         self.log('Close, {0:8.2f}'.format(self.dataclose[0]))
 
         if self.status != "LIVE" and ENV == PRODUCTION:  # waiting for live status in production

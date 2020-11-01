@@ -34,7 +34,7 @@ class VIXStretches(BaseStrategy):
         self.vixsma = bt.ind.SMA(self.vixstd, period=self.p.vix_sma)
 
     def next(self):
-        self.update_indicators()
+        self.update_profit()
         self.log('Close, {0:8.2f}'.format(self.spydataclose[0]))
 
         if self.status != "LIVE" and ENV == PRODUCTION:

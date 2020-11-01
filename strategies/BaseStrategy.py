@@ -19,6 +19,7 @@ class BaseStrategy(bt.Strategy):
         self.hard_sell = False
         self.bar_executed = None
         self.profit = 0
+        self.stop_order_id = None
 
     def next(self):
         pass
@@ -28,7 +29,7 @@ class BaseStrategy(bt.Strategy):
         self.hard_sell = False
         self.buy_price_close = None
 
-    def update_indicators(self):
+    def update_profit(self):
         self.profit = 0
         if self.buy_price_close and self.buy_price_close > 0:
             self.profit = float(self.dataclose[0] - self.buy_price_close) / self.buy_price_close
@@ -100,8 +101,21 @@ class BaseStrategy(bt.Strategy):
 
         self.order = None
 
-    def short(self, size=10):
-        if self.last_operation == "SELL":
+    def short(self, size=10, reverse=False, stop=None):
+        if reverse:
+            if self.position.upopened < 0:
+                return
+            if self.position.upopened > 0:
+                self.log("Long -> Short: $%.2f\tLong Stop: $%.2f\tCurrent Opened: %i\tOpened After Order: %i" % (self.dataclose[0], stop, self.position.upopened, -size), True)
+                self.cancel(self.stop_order_id)
+                self.sell(size=(2*size))  # This cuts the long position and puts on a short
+                self.stop_order_id = self.buy(size=size, exectype=bt.Order.Stop, price=stop) # Stop loss order
+            else:
+                self.log("Short: $%.2f\tLong Stop: $%.2f\tCurrent Opened: 0\tOpened After Order: %i" % (self.dataclose[0], stop, size), True)
+                self.sell(size=size)
+                self.stop_order_id = self.buy(size=size, exectype=bt.Order.Stop, price=stop) # Stop loss order
+        elif self.last_operation == "SELL":
+            self.log('Not selling due to previous sale.  Current Position: {}'.format(self.position))
             return
 
         if ENV == DEVELOPMENT:
@@ -117,8 +131,21 @@ class BaseStrategy(bt.Strategy):
         self.log("Sell ordered: $%.2f. Amount %.6f - $%.2f USDT" % (self.dataclose[0], amount, value), True)
         return self.sell(size=amount)
 
-    def long(self, size=10):
-        if self.last_operation == "BUY":
+    def long(self, size=10, reverse=False, stop=None):
+        if reverse:
+            if self.position.upopened > 0:
+                return
+            if self.position.upopened < 0:
+                self.log("Short -> Long: $%.2f\tShort Stop: $%.2f\tCurrent Opened: %i\tOpened After Order: %i" % (self.dataclose[0], stop, self.position.upopened, size), True)
+                self.cancel(self.stop_order_id)
+                self.buy(size=(2*size))  # This covers the short + adds a long position
+                self.stop_order_id = self.sell(size=size, exectype=bt.Order.Stop, price=stop) # Stop loss order
+            else:
+                self.log("Long: $%.2f\tLong Stop: $%.2f\tCurrent Opened: 0\tOpened After Order: %i" % (self.dataclose[0], stop, size), True)
+                self.buy(size=size)
+                self.stop_order_id = self.sell(size=size, exectype=bt.Order.Stop, price=stop) # Stop loss order
+        elif self.last_operation == "BUY":
+            self.log('Not buying due to previous buy.  Current Position: {}'.format(self.position))
             return
 
         self.buy_price_close = self.dataclose[0]
