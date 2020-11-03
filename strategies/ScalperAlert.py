@@ -1,6 +1,6 @@
-import backtrader as bt
 from strategies.BaseStrategy import BaseStrategy
 from indicators.ScalperAlert import ScalperAlert
+
 
 class ScalperStrategy(BaseStrategy):
     params = dict(

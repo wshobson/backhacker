@@ -13,6 +13,7 @@ import pytz
 import pandas as pd
 # import pandas_datareader.data as web
 import quantstats as qs
+from backtrader import signals
 
 from analyzers.CashMarket import CashMarket
 from config import ENV, PRODUCTION, ALPACA
@@ -50,6 +51,7 @@ from util.misc import print_trade_analysis, str2bool, valid_date
 
 matplotlib.style.use('default')
 qs.extend_pandas()
+
 
 def parse_args(pargs=None):
     parser = argparse.ArgumentParser(
@@ -151,7 +153,7 @@ def main():
 
     time_frame = bt.TimeFrame.Minutes if args.is_minute else bt.TimeFrame.Days
     data1 = None
-    timezone = pytz.timezone('US/Pacific')
+    timezone = pytz.timezone('US/Eastern')
 
     store = alpaca_backtrader_api.AlpacaStore(
         key_id=ALPACA.get("key"),

@@ -3,20 +3,20 @@ import backtrader as bt
 
 class KeltnerChannel(bt.Indicator):
     """
-      Keltner Channels are a technical indicator that combines an exponential
-      moving average with volatility-based envelopes set above and below the EMA
-      at a fixed percentage of the same duration. Keltner Channels aim to identify
-      the underlying price trend and over-extended conditions.
+        Keltner Channels are a technical indicator that combines an exponential
+        moving average with volatility-based envelopes set above and below the EMA
+        at a fixed percentage of the same duration. Keltner Channels aim to identify
+        the underlying price trend and over-extended conditions.
           Formula:
           - https://en.wikipedia.org/wiki/Keltner_channel
           See also:
           - https://analyzingalpha.com/keltner-channels
-      """
+    """
     lines = ('mid', 'upper', 'lower',)
 
     params = dict(
-        ema=21,
-        atr=1.5,
+        period=20,
+        factor=1.5,
     )
 
     plotinfo = dict(subplot=False)  # plot along with data
@@ -28,5 +28,5 @@ class KeltnerChannel(bt.Indicator):
 
     def __init__(self):
         self.l.mid = bt.ind.EMA(period=self.p.ema)
-        self.l.upper = self.l.mid + bt.ind.ATR(period=self.p.ema) * self.p.atr
-        self.l.lower = self.l.mid - bt.ind.ATR(period=self.p.ema) * self.p.atr
+        self.l.upper = self.l.mid + bt.ind.ATR(period=self.p.period) * self.p.factor
+        self.l.lower = self.l.mid - bt.ind.ATR(period=self.p.period) * self.p.factor

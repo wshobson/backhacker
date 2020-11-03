@@ -1,5 +1,6 @@
 import backtrader as bt
 
+
 class ScalperAlert(bt.Indicator):
     lines = ('signal','stop')
     params = (('period', 4),)
