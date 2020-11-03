@@ -151,7 +151,7 @@ def main():
 
     time_frame = bt.TimeFrame.Minutes if args.is_minute else bt.TimeFrame.Days
     data1 = None
-    timezone = pytz.timezone('US/Pacific')
+    timezone = pytz.timezone('US/Eastern')
 
     store = alpaca_backtrader_api.AlpacaStore(
         key_id=ALPACA.get("key"),

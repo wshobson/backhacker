@@ -6,11 +6,12 @@ DEVELOPMENT = "development"
 # COIN_TARGET = "BTC"
 # COIN_REFER = "USDT"
 
-ENV = os.getenv("ENVIRONMENT", DEVELOPMENT)
+#ENV = os.getenv("ENVIRONMENT", DEVELOPMENT)
+ENV = os.getenv("ENVIRONMENT", PRODUCTION)
 
 ALPACA = {
-    "key": "PKO2LOVJQ40HTVUVWTQY",
-    "secret": "a20LbMWJqwLi44FsH1XU2fPzmMVAxLGLS43NcHbg"
+    "key": "PKNTMEMK1QCOE0JQIPRT",
+    "secret": "98suhOSCNL4cagduVzLl7hk7JNCnmUGpf8LXv3ES"
 }
 
 ALPHAVANTAGE = {
