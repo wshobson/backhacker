@@ -10,12 +10,12 @@ DEVELOPMENT = "development"
 ENV = os.getenv("ENVIRONMENT", PRODUCTION)
 
 ALPACA = {
-    "key": "PKNTMEMK1QCOE0JQIPRT",
-    "secret": "98suhOSCNL4cagduVzLl7hk7JNCnmUGpf8LXv3ES"
+    "key": os.environ["ALPACA_KEY"],
+    "secret": os.environ["ALPACA_SECRET"]
 }
 
 ALPHAVANTAGE = {
-    "key": "UISQPDG0DYI3R5YY"
+    "key": os.environ["ALPHAVANTAGE_KEY"]
 }
 
 # TELEGRAM = {
