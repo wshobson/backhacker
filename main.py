@@ -156,8 +156,7 @@ def main():
     store = alpaca_backtrader_api.AlpacaStore(
         key_id=ALPACA.get("key"),
         secret_key=ALPACA.get("secret"),
-        paper=True,
-        usePolygon=False)
+        paper=True)
 
     DataFactory = store.getdata
 
