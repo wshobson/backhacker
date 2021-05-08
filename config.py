@@ -6,8 +6,8 @@ DEVELOPMENT = "development"
 # COIN_TARGET = "BTC"
 # COIN_REFER = "USDT"
 
-#ENV = os.getenv("ENVIRONMENT", DEVELOPMENT)
-ENV = os.getenv("ENVIRONMENT", PRODUCTION)
+ENV = os.getenv("ENVIRONMENT", DEVELOPMENT)
+#ENV = os.getenv("ENVIRONMENT", PRODUCTION)
 
 ALPACA = {
     "key": os.environ["ALPACA_KEY"],
